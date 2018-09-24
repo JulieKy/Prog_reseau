@@ -89,14 +89,26 @@ void do_listen(int sock, struct sockaddr_in saddr_in){
         socklen_t* addrlen = &length;
         accept(sock, (struct sockaddr*)&saddr_in, addrlen); // Surement pas les bons paramètres (il faut mettre ceux clients)
 
-
         //read what the client has to say
         //do_read()
-        int nb_recv =0;
-        int to_recv=sizeof(saddr_in);
+        //char buf[30];
+        char* buf = malloc(sizeof (char) * 30);
+
+        int nb_rcv =0;
+        int to_rcv=strlen(buf);
         do{
-          nb_recv+=recv(sock,(struct sockaddr*)&saddr_in + nb_recv, to_recv-nb_recv,0);// PAS DU TOUT SUR QUE CE SOIT CA
-        } while (nb_recv!=to_recv);
+          nb_rcv+=read(sock,buf+nb_rcv, strlen(buf)-nb_rcv);// PAS DU TOUT SUR QUE CE SOIT CA
+        } while (nb_rcv!=to_rcv);
+
+        printf("%c",buf[1]);
+        //we write back to the client
+        //do_write()
+
+        int sent=0;
+        int to_send=strlen(buf);
+        do{
+          sent+= write(sock,buf+sent,strlen(buf)-sent);
+        } while (sent!=to_send);
 
         //we write back to the client
         //do_write()

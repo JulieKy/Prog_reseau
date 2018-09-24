@@ -10,6 +10,12 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+// Prototypes
+int do_socket();
+struct sockaddr_in init_host_addr(char*,int);
+void do_connect (struct sockaddr_in, int);
+char* readline();
+void handle_client_message(char*, int);
 
 int main(int argc,char** argv)
 {
@@ -26,54 +32,59 @@ int main(int argc,char** argv)
     char* sv_addr=argv[1]; // adresse du serveur
     short n_port=atoi(argv[2]); //numéro de port de la socket côté serveur (quand connect)
 
-    //get the socket
-    //s = do_socket()
-    int sock;
-    sock = socket(AF_INET, SOCK_STREAM, 0);
-    if (sock==-1){
-      perror("socket");
-      exit(EXIT_FAILURE);
-    }
+    int sock=do_socket();
+    struct sockaddr_in sock_host=init_host_addr(sv_addr, n_port);
+    do_connect(sock_host, sock);
+    char* msg=readline();
+    handle_client_message(msg, sock);
 
-    // Init the sock_host structure
-    struct sockaddr_in sock_host;
-    memset(& sock_host, '\0', sizeof(sock_host)); // Initilalisation de l'adresse de la socket à 0
-    sock_host.sin_family=AF_INET; // Ipv4
-    sock_host.sin_port=htons(n_port); // ATTENTION, PEUT ETRE PAS 0 !!!  Le port client est alloué dynamiquement
-    int sv_addr_ok;
-    sv_addr_ok = inet_aton(sv_addr, &sock_host.sin_addr); // Converti l'adresse en une donnée binaire (renvoie 0 si pas bon)
+    return 0;
+}
 
-    printf("adresse serveur ok?: %d\nport serveur: %d\nport client : %d\nfini\n", sv_addr_ok,n_port, sock_host.sin_port);
+// Get the socket
+int do_socket(){
+  int sock;
+  sock = socket(AF_INET, SOCK_STREAM, 0);
+  if (sock==-1){
+    perror("socket");
+    exit(EXIT_FAILURE);
+  }
+  return sock;
+}
 
+// Init the sock_host structure
+struct sockaddr_in init_host_addr(char* sv_addr, int sv_port){
 
-    //connect to remote socket
-  connect(sock,(struct sockaddr*)& sock_host, sizeof(sock_host));
+  struct sockaddr_in sock_host;
+  memset(& sock_host, '\0', sizeof(sock_host));
+  sock_host.sin_family=AF_INET;
+  sock_host.sin_port=htons(sv_port);
+  int sv_addr_bin = inet_aton(sv_addr, &sock_host.sin_addr);
 
+  return sock_host;
+}
 
-//get address info from the server
-//get_addr_info()
+// Connect to remote socket
+void do_connect (struct sockaddr_in sock_host, int sock){
+  int con=connect(sock,(struct sockaddr*)&sock_host, sizeof(sock_host));
+  if (con!=0){
+    perror("connection");
+    exit(EXIT_FAILURE);
+  }
+}
 
-//get the socket
-//s = do_socket()
+// Get user input
+char* readline(){
+  char* msg = malloc(sizeof (char) * 30);
+  printf("Que voulez-vous envoyer au serveur?\n");
+  fgets(msg,30,stdin); // 30 pour avoir une ligne
+  return msg;
+}
 
-//connect to remote socket
-//do_connect()
-
-
-//get user input
-//readline()
-char msg[30];
-printf("Que voulez-vous envoyer au serveur?\n");
-fgets(msg,30,stdin); // 30 pour avoir une ligne
-
-//send message to the server
-//handle_client_message()
-int sent=0, to_send=strlen(msg);
-do{
-  sent+= write(sock,msg+sent,strlen(msg)-sent);
-} while (sent!=to_send);
-
-return 0;
-
-
+// Send message to the server
+void handle_client_message(char* msg, int sock){
+  int sent=0, to_send=strlen(msg);
+  do{
+    sent+= write(sock,msg+sent,strlen(msg)-sent);
+  } while (sent!=to_send);
 }

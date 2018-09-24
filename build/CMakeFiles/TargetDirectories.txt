@@ -1,0 +1,6 @@
+/media/sf_enseirb/T2/S7/RE216_Programmation reseaux/Projet/build/CMakeFiles/rebuild_cache.dir
+/media/sf_enseirb/T2/S7/RE216_Programmation reseaux/Projet/build/CMakeFiles/edit_cache.dir
+/media/sf_enseirb/T2/S7/RE216_Programmation reseaux/Projet/build/jalon01/CMakeFiles/rebuild_cache.dir
+/media/sf_enseirb/T2/S7/RE216_Programmation reseaux/Projet/build/jalon01/CMakeFiles/edit_cache.dir
+/media/sf_enseirb/T2/S7/RE216_Programmation reseaux/Projet/build/jalon01/CMakeFiles/RE216_JALON01_CLIENT.dir
+/media/sf_enseirb/T2/S7/RE216_Programmation reseaux/Projet/build/jalon01/CMakeFiles/RE216_JALON01_SERVER.dir

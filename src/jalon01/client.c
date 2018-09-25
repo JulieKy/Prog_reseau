@@ -21,7 +21,6 @@ void handle_server_message(int);
 int main(int argc,char** argv)
 {
 
-
     if (argc != 3)
     {
         fprintf(stderr,"usage: RE216_CLIENT hostname port\n");
@@ -36,9 +35,11 @@ int main(int argc,char** argv)
     int sock=do_socket();
     struct sockaddr_in sock_host=init_host_addr(sv_addr, n_port);
     do_connect(sock_host, sock);
-    char* msg=readline(sock);
-    handle_client_message(msg, sock);
-    handle_server_message(sock);
+    for (;;){
+      char* msg=readline(sock);
+      handle_client_message(msg, sock);
+      handle_server_message(sock);
+    }
 
     return 0;
 }
@@ -108,8 +109,5 @@ int to_rcv=strlen(bufc);
   read(sock,bufc, 30);
   printf("readclient\n");
 //} while (nb_rcv!=to_rcv);
-
-
-
 printf("Le message est : %s", bufc);
 }

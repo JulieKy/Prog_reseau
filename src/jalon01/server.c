@@ -80,46 +80,51 @@ void do_listen(int sock, struct sockaddr_in saddr_in){
     //specify the socket to be a server socket and listen for at most 20 concurrent client
     //listen()
 
-    for (int i=0;i<20;i++)
-    {
+    //for (int i=0;i<20;i++)
+    //{
 
         //accept connection from client
         //do_accept()
         socklen_t length = sizeof(saddr_in);
         socklen_t* addrlen = &length;
-        accept(sock, (struct sockaddr*)&saddr_in, addrlen); // Surement pas les bons paramètres (il faut mettre ceux clients)
-
+        int new_sock;
+        new_sock=accept(sock, (struct sockaddr*)&saddr_in, addrlen); // Surement pas les bons paramètres (il faut mettre ceux clients)
+        if (new_sock < 0){
+          //printf("accept");
+          perror("accept");
+          exit(EXIT_FAILURE);
+        }
         //read what the client has to say
         //do_read()
-        //char buf[30];
-        char* buf = malloc(sizeof (char) * 30);
-
+        //char* buf = malloc(sizeof (char) * 30);
+        char buf[30];
+        //bzero(buf, 30);
         int nb_rcv =0;
-        int to_rcv=strlen(buf);
-        do{
-          nb_rcv+=read(sock,buf+nb_rcv, strlen(buf)-nb_rcv);// PAS DU TOUT SUR QUE CE SOIT CA
-        } while (nb_rcv!=to_rcv);
-
-        printf("%c",buf[1]);
-        //we write back to the client
-        //do_write()
-
-        int sent=0;
-        int to_send=strlen(buf);
-        do{
-          sent+= write(sock,buf+sent,strlen(buf)-sent);
-        } while (sent!=to_send);
+        int to_rcv=30;
+        printf("%d", to_rcv);
+      //  do{
+        //  nb_rcv+=read(new_sock,buf+nb_rcv, strlen(buf)-nb_rcv);// PAS DU TOUT SUR QUE CE SOIT CA
+          read(new_sock,buf, 30);
+          printf("hello\n");
+      //  } while (nb_rcv!=to_rcv);
 
         //we write back to the client
         //do_write()
         //send(sock, &msg, ,0);
+        int sent=0;
+        int to_send=strlen(buf);
+        //do{
+          //sent+= write(new_sock,buf+sent,strlen(buf)-sent);
+          write(new_sock,buf,30);
+          printf("boucle send\n");
+      //  } while (sent!=to_send);
 
-        //clean up client socket
+      //  i++;
+    //}
 
-        i++;
-    }
-  }
+}
 
+  //clean up client socket
     //clean up server socket
 
     //return 0;

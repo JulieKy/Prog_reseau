@@ -122,6 +122,7 @@ void do_close(char* buf, int new_sock){
     printf("La socket côté serveur est fermée");
     fflush(stdout);
     close(new_sock);
+    free(buf);
   }
 }
 

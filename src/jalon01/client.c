@@ -17,6 +17,7 @@ void do_connect (struct sockaddr_in, int);
 char* readline(int);
 void handle_client_message(char*, int);
 void handle_server_message(int);
+void do_close(msg, sock);
 
 // Main
 int main(int argc,char** argv)
@@ -92,11 +93,8 @@ void handle_client_message(char* msg, int sock){
   do{
     sent+= write(sock,msg+sent,strlen(msg)-sent);
   } while (sent!=to_send);
-  if (strcmp(msg,"/quit\n")==0){
-    printf("La socket client est fermée\n");
-    close(sock);
-    exit(EXIT_SUCCESS);
-  }
+  if (strcmp(msg,"/quit\n")==0)
+    do_close(msg, sock);
 }
 
 // Read what the client has to say
@@ -110,4 +108,13 @@ void handle_server_message(int sock){
     read(sock,bufc, 80);
   //} while (nb_rcv!=to_rcv);
   printf("Le message est : %s\n", bufc);
+}
+
+void do_close(char* msg, int sock){
+  if (strcmp(msg,"/quit\n")==0){
+    printf("La socket client est fermée\n");
+    close(sock);
+    exit(EXIT_SUCCESS);
+    free(msg);
+  }
 }

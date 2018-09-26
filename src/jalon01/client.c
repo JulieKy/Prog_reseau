@@ -78,10 +78,10 @@ void do_connect (struct sockaddr_in sock_host, int sock){
 
 // Get user input
 char* readline(int sock){
-  char* msg = malloc(sizeof (char) * 30);
+  char* msg = malloc(sizeof (char) * 80);
   //bzero(msg, 30);
   printf("Que voulez-vous envoyer au serveur?\n");
-  fgets(msg,30,stdin); // 30 pour avoir une ligne
+  fgets(msg,80,stdin); // 80 pour avoir une ligne
   if (strcmp(msg,"/quit")==0){
     close(sock);
   }
@@ -100,14 +100,14 @@ void handle_client_message(char* msg, int sock){
 //do_read()
 //char buf[30];
 void handle_server_message(int sock){
-char* bufc = malloc(sizeof (char) * 30);
-bzero(bufc,30);
-int nb_rcv =0;
-int to_rcv=strlen(bufc);
-//do{
-  nb_rcv+=read(sock,bufc+nb_rcv, strlen(bufc)-nb_rcv);// PAS DU TOUT SUR QUE CE SOIT CA
-  read(sock,bufc, 30);
-  printf("readclient\n");
-//} while (nb_rcv!=to_rcv);
-printf("Le message est : %s", bufc);
+  char* bufc = malloc(sizeof (char) * 80);
+  bzero(bufc,80);
+  int nb_rcv =0;
+  int to_rcv=strlen(bufc);
+  //do{
+    nb_rcv+=read(sock,bufc+nb_rcv, strlen(bufc)-nb_rcv);// PAS DU TOUT SUR QUE CE SOIT CA
+    read(sock,bufc, 80);
+    printf("readclient\n");
+  //} while (nb_rcv!=to_rcv);
+  printf("Le message est : %s\n", bufc);
 }

@@ -23,29 +23,31 @@ void do_write(char*, int);
 
 // Main
 int main(int argc, char** argv) {
-
-    if (argc != 2) {
-        fprintf(stderr, "usage: RE216_SERVER port\n"); // Il faut donner le port de la socket coté client ??
-        return 1;
-    }
-
-    int sv_port=atoi(argv[1]);
-    int sock=do_socket();
-    struct sockaddr_in saddr_in=init_serv_addr(sv_port);
-    do_bind(sock, saddr_in);
-    do_listen(sock, saddr_in);
-
-    //for (int i=0;i<20;i++)
-    //{
-      int new_sock;
-      new_sock=do_accept(saddr_in,sock);
-      char* buf;
-      buf=do_read(new_sock);
-      do_write(buf, new_sock);
-    //  i++;
-    //}
-    return 0;
+  printf("serveur vraiment vraiment pas la?");
+  printf("serveur est tu la?");
+  if (argc != 2) {
+      fprintf(stderr, "usage: RE216_SERVER port\n"); // Il faut donner le port de la socket coté client ??
+      return 1;
   }
+
+  int sv_port=atoi(argv[1]);
+  int sock=do_socket();
+  struct sockaddr_in saddr_in=init_serv_addr(sv_port);
+  do_bind(sock, saddr_in);
+  do_listen(sock, saddr_in);
+  int new_sock=do_accept(saddr_in,sock);
+
+
+  //for (int i=0;i<20;i++) // Peut etre boucle infinie pour qu'on puisse lire et envoyé autant de message que l'on veut
+  char* buf;
+  for(;;)
+  {
+    buf=do_read(new_sock);
+    do_write(buf, new_sock);
+    //i++;
+  }
+  return 0;
+}
 
 // Create the socket and check the validity
 int do_socket(){
@@ -67,7 +69,6 @@ struct sockaddr_in init_serv_addr(int sv_port){
   saddr_in.sin_family=AF_INET;
   saddr_in.sin_port=htons(sv_port);
   saddr_in.sin_addr.s_addr=INADDR_ANY;
-  printf("port serveur: %d\nfini\n", sv_port);
   return saddr_in;
 }
 
@@ -97,7 +98,6 @@ int do_accept(struct sockaddr_in saddr_in, int sock) {
   int new_sock;
   new_sock=accept(sock, (struct sockaddr*)&saddr_in, addrlen); // Surement pas les bons paramètres (il faut mettre ceux clients)
   if (new_sock < 0){
-    //printf("accept");
     perror("accept");
     exit(EXIT_FAILURE);
   }
@@ -106,17 +106,17 @@ int do_accept(struct sockaddr_in saddr_in, int sock) {
 
 // Read what the client has to say
 char* do_read(int new_sock){
-  char* buf = malloc(sizeof (char) * 30);
+  char* buf = malloc(sizeof (char) * 80);
   //char buf[30];
-  bzero(buf, 30);
+  bzero(buf, 80);
   int nb_rcv =0;
-  int to_rcv=30;
+  int to_rcv=80;
   printf("%d", to_rcv);
   //  do{
   //  nb_rcv+=read(new_sock,buf+nb_rcv, strlen(buf)-nb_rcv);// PAS DU TOUT SUR QUE CE SOIT CA
-    read(new_sock,buf, 30);
-    printf("hello\n");
+    read(new_sock,buf, 80);
   //  } while (nb_rcv!=to_rcv);
+  return buf;
   }
 
 
@@ -124,11 +124,11 @@ char* do_read(int new_sock){
 void do_write(char* buf, int new_sock){
   //send(sock, &msg, ,0);
   int sent=0;
+  printf("send");
   // int to_send=strlen(&buf);
   //do{
     //sent+= write(new_sock,buf+sent,strlen(buf)-sent);
-    write(new_sock,buf,30);
-    printf("boucle send\n");
+    write(new_sock,buf,80);
   //  } while (sent!=to_send);
 
 }

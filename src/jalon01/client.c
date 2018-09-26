@@ -18,6 +18,7 @@ char* readline(int);
 void handle_client_message(char*, int);
 void handle_server_message(int);
 
+// Main
 int main(int argc,char** argv)
 {
 
@@ -29,7 +30,7 @@ int main(int argc,char** argv)
 
     //get address info from the server
     //get_addr_info()
-    char* sv_addr=argv[1]; // adresse du serveur
+    char* sv_addr=argv[1]; // adresse du serveur (127.0.0.1)
     short n_port=atoi(argv[2]); //numéro de port de la socket côté serveur (quand connect)
 
     int sock=do_socket();
@@ -82,9 +83,6 @@ char* readline(int sock){
   //bzero(msg, 30);
   printf("Que voulez-vous envoyer au serveur?\n");
   fgets(msg,80,stdin); // 80 pour avoir une ligne
-  if (strcmp(msg,"/quit")==0){
-    close(sock);
-  }
   return msg;
 }
 
@@ -94,11 +92,14 @@ void handle_client_message(char* msg, int sock){
   do{
     sent+= write(sock,msg+sent,strlen(msg)-sent);
   } while (sent!=to_send);
+  if (strcmp(msg,"/quit\n")==0){
+    printf("La socket client est fermée\n");
+    close(sock);
+    exit(EXIT_SUCCESS);
+  }
 }
 
-//read what the client has to say
-//do_read()
-//char buf[30];
+// Read what the client has to say
 void handle_server_message(int sock){
   char* bufc = malloc(sizeof (char) * 80);
   bzero(bufc,80);
@@ -107,7 +108,6 @@ void handle_server_message(int sock){
   //do{
     nb_rcv+=read(sock,bufc+nb_rcv, strlen(bufc)-nb_rcv);// PAS DU TOUT SUR QUE CE SOIT CA
     read(sock,bufc, 80);
-    printf("readclient\n");
   //} while (nb_rcv!=to_rcv);
   printf("Le message est : %s\n", bufc);
 }

@@ -54,29 +54,36 @@ int main(int argc, char** argv) {
   for(;;)
   {
     // Poll
+    printf("\n\ninf\n");
     n=poll(fds, nfds, timeout); // Donne le nombre de socket en activité
-    printf("Etape: poll n=%d",n);
 
     int current_size = nfds;
+    printf("current_size : %d\n", nfds);
+
+    if(fds[0].revents == POLLIN) {// je ne sais pas si c'est events ou revents qu'il faut mettre
+      printf("Nouveau client essaie de se connecter\n");
+      //fflush(stdout);
+
+      if (n<20){ // Est ce que c'est bien n ?
+        printf("etape : avant_accept\n");
+        int new_sock=do_accept(saddr_in,sock);
+        printf("etape : accept\n");
+        fds[nfds].fd = new_sock;
+        fds[nfds].events = POLLIN;
+        nfds++;
+      }
+      else
+        printf("Le serveur ne peut pas accepter plus de 20 connections en même temps");
+    }
 
     // Test pour trouver les sockets en activité
-    for(int i=1; i<current_size;i++){
+    for(int i=0; i<current_size ; i++){
+      printf("boucle_%d\n", i);
 
-      if(fds[0].revents == POLLIN) {// je ne sais pas si c'est events ou revents qu'il faut mettre
-        printf("Premiere socket serveur en activité, un nouveau client essaie de se connecter");
-        if (n<20){ // Est ce que c'est bien n ?
-          int new_sock=do_accept(saddr_in,sock);
-          fds[nfds].fd = new_sock;
-          fds[nfds].events = POLLIN;
-          nfds++;
-        }
-        else
-          printf("Le serveur ne peut pas accepter plus de 20 connections en même temps");
-      }
-
-      if (fds[i].revents == POLLIN){
+      if ( i!=0 && fds[i].revents == POLLIN){
         char* buf;
-        int res;
+        //int res;
+        printf("sock %d : read/write", fds[i].fd);
         buf=do_read(fds[i].fd);
         do_close(buf, fds[i].fd);
         do_write(buf, fds[i].fd);
@@ -135,6 +142,7 @@ int do_accept(struct sockaddr_in saddr_in, int sock) {
   socklen_t* addrlen = &length;
   int new_sock;
   new_sock=accept(sock, (struct sockaddr*)&saddr_in, addrlen); // Surement pas les bons paramètres (il faut mettre ceux clients)
+  printf("num_sock=%d\n",new_sock);
   if (new_sock < 0){
     perror("accept");
     exit(EXIT_FAILURE);
@@ -179,21 +187,3 @@ void do_write(char* buf, int new_sock){
   //  } while (sent!=to_send);
 
 }
-
-// struct pollfds[] ;
-//   int fd ;
-//   events;
-//   revents;
-// // Ajout de la socket serveur
-// pollfds[0].fd=sock;
-// pollfds[0].events=POLLIN;
-//
-// int timeout=-1;
-// int n=poll(pollfds, ..., timeout); //Renvoie le nombre de socket sur lesquelles il y a eu un evenement
-// for(int i=0;i<n;i++){
-//   pollfds[i].events=POLLIN;
-// }
-// // On initailise la sock
-//   //POLLIN : verif qu'on a une activité qui arrve sur la socket (on veut écouter dessus)
-// //timeout: -1 : on bloque jusqu'à qu'il y est une activité
-// //Poll renvoie le nombre de sock sur laquelle il y a eu des events

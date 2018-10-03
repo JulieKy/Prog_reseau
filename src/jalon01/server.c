@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <sys/poll.h>
 
 void error(const char *msg)
 {
@@ -34,15 +35,55 @@ int main(int argc, char** argv) {
   struct sockaddr_in saddr_in=init_serv_addr(sv_port);
   do_bind(sock, saddr_in);
   do_listen(sock, saddr_in);
-  int new_sock=do_accept(saddr_in,sock);
+
   char* buf;
   int res;
+
+
+  struct pollfd fds[20];
+  int n;
+  int nfds=1;  // Peut être de type nfds_t
+  int timeout=-1;
+
+  memset(fds, 0 , sizeof(fds));
+
+  // Initialisation du tableau avec la première socket serveur en activité
+  fds[0].fd=sock;
+  fds[0].events = POLLIN;
+
   for(;;)
   {
-    buf=do_read(new_sock);
-    do_close(buf, new_sock);
-    do_write(buf, new_sock);
+    // Poll
+    n=poll(fds, nfds, timeout); // Donne le nombre de socket en activité
+    printf("Etape: poll n=%d",n);
+
+    int current_size = nfds;
+
+    // Test pour trouver les sockets en activité
+    for(int i=1; i<current_size;i++){
+
+      if(fds[0].revents == POLLIN) {// je ne sais pas si c'est events ou revents qu'il faut mettre
+        printf("Premiere socket serveur en activité, un nouveau client essaie de se connecter");
+        if (n<20){ // Est ce que c'est bien n ?
+          int new_sock=do_accept(saddr_in,sock);
+          fds[nfds].fd = new_sock;
+          fds[nfds].events = POLLIN;
+          nfds++;
+        }
+        else
+          printf("Le serveur ne peut pas accepter plus de 20 connections en même temps");
+      }
+
+      if (fds[i].revents == POLLIN){
+        char* buf;
+        int res;
+        buf=do_read(fds[i].fd);
+        do_close(buf, fds[i].fd);
+        do_write(buf, fds[i].fd);
+      }
+    }
   }
+
   return 0;
 }
 
@@ -138,3 +179,21 @@ void do_write(char* buf, int new_sock){
   //  } while (sent!=to_send);
 
 }
+
+// struct pollfds[] ;
+//   int fd ;
+//   events;
+//   revents;
+// // Ajout de la socket serveur
+// pollfds[0].fd=sock;
+// pollfds[0].events=POLLIN;
+//
+// int timeout=-1;
+// int n=poll(pollfds, ..., timeout); //Renvoie le nombre de socket sur lesquelles il y a eu un evenement
+// for(int i=0;i<n;i++){
+//   pollfds[i].events=POLLIN;
+// }
+// // On initailise la sock
+//   //POLLIN : verif qu'on a une activité qui arrve sur la socket (on veut écouter dessus)
+// //timeout: -1 : on bloque jusqu'à qu'il y est une activité
+// //Poll renvoie le nombre de sock sur laquelle il y a eu des events

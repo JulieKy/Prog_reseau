@@ -13,6 +13,8 @@ void error(const char *msg)
     exit(1);
 }
 
+#define MSG_MAXLEN 60
+
 // Décalaration des prototypes de fonctions
 int do_socket();
 struct sockaddr_in init_serv_addr(int);
@@ -58,14 +60,11 @@ int main(int argc, char** argv) {
     n=poll(fds, nfds, timeout); // Donne le nombre de socket en activité
 
     int current_size = nfds;
-    printf("current_size : %d\n", nfds);
 
     if(fds[0].revents == POLLIN) {// je ne sais pas si c'est events ou revents qu'il faut mettre
       printf("Nouveau client essaie de se connecter\n");
-      //fflush(stdout);
 
-      if (n<20){ // Est ce que c'est bien n ?
-        printf("etape : avant_accept\n");
+      if (nfds<2){ // Est ce que c'est bien n ?
         int new_sock=do_accept(saddr_in,sock);
         printf("etape : accept\n");
         fds[nfds].fd = new_sock;
@@ -78,12 +77,10 @@ int main(int argc, char** argv) {
 
     // Test pour trouver les sockets en activité
     for(int i=0; i<current_size ; i++){
-      printf("boucle_%d\n", i);
 
       if ( i!=0 && fds[i].revents == POLLIN){
         char* buf;
         //int res;
-        printf("sock %d : read/write", fds[i].fd);
         buf=do_read(fds[i].fd);
         do_close(buf, fds[i].fd);
         do_write(buf, fds[i].fd);
@@ -98,6 +95,7 @@ int main(int argc, char** argv) {
 int do_socket(){
   int sock;
   sock = socket(AF_INET, SOCK_STREAM, 0);
+  setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &(int){ 1 }, sizeof(int));
   if (sock==-1){
     perror("socket");
     exit(EXIT_FAILURE);
@@ -152,13 +150,13 @@ int do_accept(struct sockaddr_in saddr_in, int sock) {
 
 // Read what the client has to say
 char* do_read(int new_sock){
-  char* buf = malloc(sizeof (char) * 80);
-  bzero(buf, 80);
+  char* buf = malloc(sizeof (char) * MSG_MAXLEN);
+  bzero(buf, MSG_MAXLEN);
   int nb_rcv =0;
-  int to_rcv=80;
+  int to_rcv=MSG_MAXLEN;
   //  do{
   //  nb_rcv+=read(new_sock,buf+nb_rcv, strlen(buf)-nb_rcv);// PAS DU TOUT SUR QUE CE SOIT CA
-    read(new_sock,buf, 80);
+    read(new_sock,buf, MSG_MAXLEN);
   //  } while (nb_rcv!=to_rcv);
   return buf;
   }
@@ -183,7 +181,7 @@ void do_write(char* buf, int new_sock){
   // int to_send=strlen(&buf);
   //do{
     //sent+= write(new_sock,buf+sent,strlen(buf)-sent);
-    write(new_sock,buf,80);
+    write(new_sock,buf,MSG_MAXLEN);
   //  } while (sent!=to_send);
 
 }

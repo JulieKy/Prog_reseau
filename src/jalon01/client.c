@@ -10,6 +10,8 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#define MSG_MAXLEN 60
+
 // Prototypes
 int do_socket();
 struct sockaddr_in init_host_addr(char*,int);
@@ -54,6 +56,7 @@ int do_socket(){
     perror("socket");
     exit(EXIT_FAILURE);
   }
+  setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &(int){ 1 }, sizeof(int));
   return sock;
 }
 
@@ -76,43 +79,45 @@ void do_connect (struct sockaddr_in sock_host, int sock){
     perror("connection");
     exit(EXIT_FAILURE);
   }
+  printf("Connecting to server ... done!\n");
 }
 
 // Get user input
 char* readline(int sock){
-  char* msg = malloc(sizeof (char) * 80);
-  //bzero(msg, 30);
-  printf("Que voulez-vous envoyer au serveur?\n");
-  fgets(msg,80,stdin); // 80 pour avoir une ligne
+  char* msg = malloc(sizeof (char) * MSG_MAXLEN);
+  memset(msg, '\0', MSG_MAXLEN);
+  printf("Sending : ");
+  fgets(msg,MSG_MAXLEN,stdin); // 80 pour avoir une ligne
   return msg;
 }
 
 // Send message to the server
 void handle_client_message(char* msg, int sock){
   int sent=0, to_send=strlen(msg);
-  do{
-    sent+= write(sock,msg+sent,strlen(msg)-sent);
-  } while (sent!=to_send);
+  //sent= write(sock,to_send,4);
+  //attendre que message recu  A CHANGER !!
+  sent= write(sock,msg,strlen(msg));
+  //printf("-> Sending : %s\n", msg);
   if (strcmp(msg,"/quit\n")==0)
     do_close(msg, sock);
 }
 
 // Read what the client has to say
 void handle_server_message(int sock){
-  char* bufc = malloc(sizeof (char) * 80);
-  bzero(bufc,80);
+  char* bufc = malloc(sizeof (char) * MSG_MAXLEN);
+  bzero(bufc,MSG_MAXLEN);
   int nb_rcv =0;
   int to_rcv=strlen(bufc);
   //do{
     nb_rcv+=read(sock,bufc+nb_rcv, strlen(bufc)-nb_rcv);// PAS DU TOUT SUR QUE CE SOIT CA
-    read(sock,bufc, 80);
+    read(sock,bufc, MSG_MAXLEN);
   //} while (nb_rcv!=to_rcv);
-  printf("Le message est : %s\n", bufc);
+  printf("Receiving : %s\n", bufc);
 }
 
 void do_close(char* msg, int sock){
   if (strcmp(msg,"/quit\n")==0){
-    printf("La socket client est fermée\n");
+    printf(" === Socket closed ===\n");
     close(sock);
     exit(EXIT_SUCCESS);
     free(msg);

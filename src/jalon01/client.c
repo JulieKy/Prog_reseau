@@ -10,6 +10,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+
 #define MSG_MAXLEN 60
 
 // Prototypes
@@ -79,7 +80,7 @@ void do_connect (struct sockaddr_in sock_host, int sock){
     perror("connection");
     exit(EXIT_FAILURE);
   }
-  printf("Connecting to server ... done!\n");
+  printf("Connecting to server ... done!\na");
 }
 
 // Get user input
@@ -93,11 +94,13 @@ char* readline(int sock){
 
 // Send message to the server
 void handle_client_message(char* msg, int sock){
-  int sent=0, to_send=strlen(msg);
-  //sent= write(sock,to_send,4);
-  //attendre que message recu  A CHANGER !!
-  sent= write(sock,msg,strlen(msg));
-  //printf("-> Sending : %s\n", msg);
+  int sent=0, msg_intsize=strlen(msg);
+  char size_msg[MSG_MAXLEN];
+  sprintf(size_msg, "%d", msg_intsize);
+  strcat(size_msg, "\n");
+  strcat(size_msg, msg);
+  printf("%s\n",size_msg);
+  sent= write(sock,size_msg,strlen(msg)); //ici
   if (strcmp(msg,"/quit\n")==0)
     do_close(msg, sock);
 }

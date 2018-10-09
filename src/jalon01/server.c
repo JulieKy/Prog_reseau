@@ -13,7 +13,7 @@ void error(const char *msg)
     exit(1);
 }
 
-#define MSG_MAXLEN 60
+#define MSG_MAXLEN 200
 
 // Décalaration des prototypes de fonctions
 int do_socket();
@@ -151,14 +151,18 @@ int do_accept(struct sockaddr_in saddr_in, int sock) {
 // Read what the client has to say
 char* do_read(int new_sock){
   char* buf = malloc(sizeof (char) * MSG_MAXLEN);
+  char* size = malloc(sizeof (char) * MSG_MAXLEN);
   bzero(buf, MSG_MAXLEN);
   int nb_rcv =0;
-  int to_rcv=MSG_MAXLEN;
-  //  do{
-  //  nb_rcv+=read(new_sock,buf+nb_rcv, strlen(buf)-nb_rcv);// PAS DU TOUT SUR QUE CE SOIT CA
-    read(new_sock,buf, MSG_MAXLEN);
+  read(new_sock,buf, MSG_MAXLEN);
+  strncpy(size, buf, 10);
+  int to_rcv=atoi(size);
+  printf("Final copied string : %d\n", to_rcv);
+  //    do{
+  //    nb_rcv+=read(new_sock,buf+nb_rcv, to_rcv-nb_rcv);// PAS DU TOUT SUR QUE CE SOIT CA
+  //    printf("read\n");
   //  } while (nb_rcv!=to_rcv);
-  return buf;
+   return buf;
   }
 
   //clean up client socket

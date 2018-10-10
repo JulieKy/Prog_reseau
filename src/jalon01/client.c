@@ -19,8 +19,8 @@ struct sockaddr_in init_host_addr(char*,int);
 void do_connect (struct sockaddr_in, int);
 char* readline(int);
 void handle_client_message(char*, int);
-void handle_server_message(int);
-void do_close(msg, sock);
+int handle_server_message(int);
+void do_close(char*, int);
 
 // Main
 int main(int argc,char** argv)
@@ -39,12 +39,22 @@ int main(int argc,char** argv)
 
     int sock=do_socket();
     struct sockaddr_in sock_host=init_host_addr(sv_addr, n_port);
+    //struct sockaddr_in* p=&sock_host;
     do_connect(sock_host, sock);
     for (;;){
       char* msg=readline(sock);
       handle_client_message(msg, sock);
-      handle_server_message(sock);
+      if (strcmp(msg,"/quit\n")==0)
+        break;
+      int too_clients=handle_server_message(sock);
+      if (too_clients==1){
+        break;
+      }
     }
+    printf("=== Socket closed === \n");
+    close(sock);
+    //free(p);
+    //do_close(msg, sock);
 
     return 0;
 }
@@ -80,7 +90,7 @@ void do_connect (struct sockaddr_in sock_host, int sock){
     perror("connection");
     exit(EXIT_FAILURE);
   }
-  printf("Connecting to server ... done!\na");
+  printf("Connecting to server ... done!\n");
 }
 
 // Get user input
@@ -94,20 +104,19 @@ char* readline(int sock){
 
 // Send message to the server
 void handle_client_message(char* msg, int sock){
-  int sent=0, msg_intsize=strlen(msg);
-  char size_msg[MSG_MAXLEN];
-  sprintf(size_msg, "%d", msg_intsize);
-  strcat(size_msg, "\n");
-  strcat(size_msg, msg);
-  printf("%s\n",size_msg);
-  sent= write(sock,size_msg,strlen(msg)); //ici
-  if (strcmp(msg,"/quit\n")==0)
-    do_close(msg, sock);
+   int sent=0, msg_intsize=strlen(msg);
+  // char size_msg[MSG_MAXLEN];
+  // sprintf(size_msg, "%d", msg_intsize);
+  // strcat(size_msg, "|");
+  // strcat(size_msg, msg);
+  // printf("%s\n",size_msg);
+  // sent= write(sock,size_msg,strlen(msg));
+  sent= write(sock,msg,strlen(msg));
 }
 
 // Read what the client has to say
-void handle_server_message(int sock){
-  char* bufc = malloc(sizeof (char) * MSG_MAXLEN);
+int handle_server_message(int sock){
+  char* bufc = malloc(sizeof (char) * 100);
   bzero(bufc,MSG_MAXLEN);
   int nb_rcv =0;
   int to_rcv=strlen(bufc);
@@ -116,13 +125,15 @@ void handle_server_message(int sock){
     read(sock,bufc, MSG_MAXLEN);
   //} while (nb_rcv!=to_rcv);
   printf("Receiving : %s\n", bufc);
+  if (strcmp(bufc,"Server cannot accept incoming connections anymore. Try again")==0){
+    return 1;
+  }
+  return 0;
 }
 
 void do_close(char* msg, int sock){
-  if (strcmp(msg,"/quit\n")==0){
     printf(" === Socket closed ===\n");
     close(sock);
     exit(EXIT_SUCCESS);
     free(msg);
-  }
 }

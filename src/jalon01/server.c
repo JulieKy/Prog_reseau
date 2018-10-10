@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
 
   struct pollfd fds[20];
   int n;
-  int nfds=1;  // Peut être de type nfds_t
+  int nfds=1;
   int timeout=-1;
 
   memset(fds, 0 , sizeof(fds));
@@ -53,26 +53,33 @@ int main(int argc, char** argv) {
   fds[0].fd=sock;
   fds[0].events = POLLIN;
 
+  int sock_closed;
+
   for(;;)
   {
-    // Poll
-    printf("\n\ninf\n");
+
     n=poll(fds, nfds, timeout); // Donne le nombre de socket en activité
 
     int current_size = nfds;
 
-    if(fds[0].revents == POLLIN) {// je ne sais pas si c'est events ou revents qu'il faut mettre
+    if(fds[0].revents == POLLIN) {
       printf("Nouveau client essaie de se connecter\n");
 
-      if (nfds<2){ // Est ce que c'est bien n ?
+      if (nfds<2){
         int new_sock=do_accept(saddr_in,sock);
         printf("etape : accept\n");
         fds[nfds].fd = new_sock;
         fds[nfds].events = POLLIN;
         nfds++;
       }
-      else
-        printf("Le serveur ne peut pas accepter plus de 20 connections en même temps");
+      else {
+        int new_sock=do_accept(saddr_in,sock);
+        printf("etape : accept socket de trop\n");
+        char* refused = malloc(sizeof (char) * (100));
+        refused="Server cannot accept incoming connections anymore. Try again later.";
+        write(new_sock,refused,MSG_MAXLEN);
+        close(new_sock);
+      }
     }
 
     // Test pour trouver les sockets en activité
@@ -82,12 +89,20 @@ int main(int argc, char** argv) {
         char* buf;
         //int res;
         buf=do_read(fds[i].fd);
-        do_close(buf, fds[i].fd);
+        printf("read : %s", buf);
+
+        if(strcmp("/quit\n", buf) == 0) {
+          sock_closed=fds[i].fd;
+          printf("=== Socket %d closed ===\n",sock_closed);
+          break;
+        }
+
         do_write(buf, fds[i].fd);
       }
     }
   }
-
+  printf("=== Socket %d closed === \n", sock_closed); // ERREUR !!
+  close(sock_closed);
   return 0;
 }
 
@@ -153,15 +168,16 @@ char* do_read(int new_sock){
   char* buf = malloc(sizeof (char) * MSG_MAXLEN);
   char* size = malloc(sizeof (char) * MSG_MAXLEN);
   bzero(buf, MSG_MAXLEN);
-  int nb_rcv =0;
+  bzero(size, MSG_MAXLEN);
   read(new_sock,buf, MSG_MAXLEN);
-  strncpy(size, buf, 10);
+  strncpy(size, buf, 10); // Le faire plus tard en reperant le |
+  int nb_rcv =10;
   int to_rcv=atoi(size);
   printf("Final copied string : %d\n", to_rcv);
-  //    do{
-  //    nb_rcv+=read(new_sock,buf+nb_rcv, to_rcv-nb_rcv);// PAS DU TOUT SUR QUE CE SOIT CA
-  //    printf("read\n");
-  //  } while (nb_rcv!=to_rcv);
+  //do{
+     nb_rcv+=read(new_sock,buf+nb_rcv, to_rcv-nb_rcv);
+     printf("nbrcv : %d\n",nb_rcv);
+   //} while (nb_rcv!=to_rcv);
    return buf;
   }
 
@@ -181,11 +197,16 @@ void do_close(char* buf, int new_sock){
 // We write back to the client
 void do_write(char* buf, int new_sock){
   //send(sock, &msg, ,0);
-  int sent=0;
+  char* message = malloc(sizeof (char) * (MSG_MAXLEN+100));
+  //message="[Server]: ";
+  //strcat(message,buf);
+
+  //int sent=0;
   // int to_send=strlen(&buf);
   //do{
     //sent+= write(new_sock,buf+sent,strlen(buf)-sent);
     write(new_sock,buf,MSG_MAXLEN);
+
   //  } while (sent!=to_send);
 
 }

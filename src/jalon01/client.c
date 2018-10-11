@@ -20,7 +20,6 @@ void do_connect (struct sockaddr_in, int);
 char* readline(int);
 void handle_client_message(char*, int);
 int handle_server_message(int);
-void do_close(char*, int);
 
 // Main
 int main(int argc,char** argv)
@@ -53,8 +52,6 @@ int main(int argc,char** argv)
     }
     printf("=== Socket closed === \n");
     close(sock);
-    //free(p);
-    //do_close(msg, sock);
 
     return 0;
 }
@@ -97,8 +94,8 @@ void do_connect (struct sockaddr_in sock_host, int sock){
 char* readline(int sock){
   char* msg = malloc(sizeof (char) * MSG_MAXLEN);
   memset(msg, '\0', MSG_MAXLEN);
-  printf("Sending : ");
-  fgets(msg,MSG_MAXLEN,stdin); // 80 pour avoir une ligne
+  printf("\n------- \nSending : ");
+  fgets(msg,MSG_MAXLEN,stdin);
   return msg;
 }
 
@@ -121,19 +118,12 @@ int handle_server_message(int sock){
   int nb_rcv =0;
   int to_rcv=strlen(bufc);
   //do{
-    nb_rcv+=read(sock,bufc+nb_rcv, strlen(bufc)-nb_rcv);// PAS DU TOUT SUR QUE CE SOIT CA
+    //nb_rcv+=read(sock,bufc+nb_rcv, strlen(bufc)-nb_rcv);// PAS DU TOUT SUR QUE CE SOIT CA
     read(sock,bufc, MSG_MAXLEN);
   //} while (nb_rcv!=to_rcv);
-  printf("Receiving : %s\n", bufc);
+  printf("\nReceiving : \n   [Server] : %s\n", bufc);
   if (strcmp(bufc,"Server cannot accept incoming connections anymore. Try again")==0){
     return 1;
   }
   return 0;
-}
-
-void do_close(char* msg, int sock){
-    printf(" === Socket closed ===\n");
-    close(sock);
-    exit(EXIT_SUCCESS);
-    free(msg);
 }

@@ -24,45 +24,45 @@ int do_accept(struct sockaddr_in, int);
 int TestTooManyC(struct pollfd*, int, int, int, struct sockaddr_in);
 char* do_read(int);
 void do_write(char*, int);
-void do_close(char*, int);
+void do_close(int);
 
-// Main
+/* -------------- Main -------------- */
 int main(int argc, char** argv) {
+
+  // Test nombre d'arguments
   if (argc != 2) {
       fprintf(stderr, "usage: RE216_SERVER port\n"); // Il faut donner le port de la socket coté client ??
       return 1;
   }
 
+  // Mise en place de la socket d'écoute
   int sv_port=atoi(argv[1]);
   int sock=do_socket();
   struct sockaddr_in saddr_in=init_serv_addr(sv_port);
   do_bind(sock, saddr_in);
   do_listen(sock, saddr_in);
 
-  char* buf;
-  int res;
-
-
+  // Definition du tableau de structures pollfd
   struct pollfd fds[20];
   int n;
   int nfds=1;
   int timeout=-1;
-
   memset(fds, 0 , sizeof(fds));
 
   // Initialisation du tableau avec la première socket serveur en activité
   fds[0].fd=sock;
   fds[0].events = POLLIN;
 
+  // fd ce la socket à fermer
   int sock_closed;
 
+  // Acceptation puis read et write tant que la socket n'est pas fermée
   for(;;)
   {
+    // Nombre de socket en activité
+    n=poll(fds, nfds, timeout);
 
-    n=poll(fds, nfds, timeout); // Donne le nombre de socket en activité
-
-    int current_size = nfds;
-
+    // Acceptation de nouveau clients si premiere socket en activité
     if(fds[0].revents == POLLIN) {
       printf("New client\n");
       int new_sock=do_accept(saddr_in,sock);
@@ -71,32 +71,37 @@ int main(int argc, char** argv) {
         nfds=nfds_test;
     }
 
-    // Test pour trouver les sockets en activité
+    // Read et write sur les sockets en activité (sauf socket d'écoute)
+    int current_size = nfds;
     for(int i=0; i<current_size ; i++){
 
       if ( i!=0 && fds[i].revents == POLLIN){
+
+        // read
         char* buf;
-        //int res;
         buf=do_read(fds[i].fd);
         printf("read : %s", buf);
 
+        //Test quit
         if(strcmp("/quit\n", buf) == 0) {
           sock_closed=fds[i].fd;
           printf("=== Socket %d closed ===\n",sock_closed);
           break;
         }
 
+        // write
         do_write(buf, fds[i].fd);
       }
     }
   }
-  printf("=== Socket %d closed === \n", sock_closed); // ERREUR !!
-  close(sock_closed);
+  // Fermeture socket
+do_close(sock_closed);
+
 
   return 0;
 }
 
-// Create the socket and check the validity
+/* -------------- Create the socket and check the validity -------------- */
 int do_socket(){
   int sock;
   sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -108,10 +113,8 @@ int do_socket(){
   return sock;
 }
 
-
-// Init the serv_add structure
+/* -------------- Init the serv_add structure -------------- */
 struct sockaddr_in init_serv_addr(int sv_port){
-
   struct sockaddr_in saddr_in;
   memset(&saddr_in,0,sizeof(saddr_in));
   saddr_in.sin_family=AF_INET;
@@ -120,7 +123,7 @@ struct sockaddr_in init_serv_addr(int sv_port){
   return saddr_in;
 }
 
-// Perform the binding (we bind on the tcp port specified)
+/* -------------- Perform the binding -------------- */
 void do_bind(int sock, struct sockaddr_in saddr_in){
   int i_bind = bind (sock, (struct sockaddr*)&saddr_in, sizeof(saddr_in));
   if (i_bind == -1){
@@ -129,7 +132,7 @@ void do_bind(int sock, struct sockaddr_in saddr_in){
     }
   }
 
-// Specify the socket to be a server socket and listen for at most 20 concurrent client
+/* -------------- Listen to clients -------------- */
 void do_listen(int sock, struct sockaddr_in saddr_in){
   int i_listen=listen(sock,20); // Peut être mettre SOMAXCONN
   if (i_listen == -1) {
@@ -138,14 +141,12 @@ void do_listen(int sock, struct sockaddr_in saddr_in){
   }
 }
 
-
-// Accept connection from client
+/* -------------- Accept connection from client -------------- */
 int do_accept(struct sockaddr_in saddr_in, int sock) {
   socklen_t length = sizeof(saddr_in);
   socklen_t* addrlen = &length;
   int new_sock;
-  new_sock=accept(sock, (struct sockaddr*)&saddr_in, addrlen); // Surement pas les bons paramètres (il faut mettre ceux clients)
-  printf("num_sock=%d\n",new_sock);
+  new_sock=accept(sock, (struct sockaddr*)&saddr_in, addrlen);
   if (new_sock < 0){
     perror("accept");
     exit(EXIT_FAILURE);
@@ -153,7 +154,7 @@ int do_accept(struct sockaddr_in saddr_in, int sock) {
   return new_sock;
 }
 
-
+/* -------------- Accept 20 concurrent client -------------- */
 int TestTooManyC(struct pollfd* fds, int nfds, int sock, int new_sock, struct sockaddr_in saddr_in){
   if (nfds<2){
     fds[nfds].fd = new_sock;
@@ -170,7 +171,7 @@ int TestTooManyC(struct pollfd* fds, int nfds, int sock, int new_sock, struct so
   }
 }
 
-// Read what the client has to say
+/* -------------- Read what the client has to say -------------- */
 char* do_read(int new_sock){
   char* buf = malloc(sizeof (char) * MSG_MAXLEN);
   char* size = malloc(sizeof (char) * MSG_MAXLEN);
@@ -180,31 +181,17 @@ char* do_read(int new_sock){
   strncpy(size, buf, 10); // Le faire plus tard en reperant le |
   int nb_rcv =10;
   int to_rcv=atoi(size);
-  printf("Final copied string : %d\n", to_rcv);
   //do{
      nb_rcv+=read(new_sock,buf+nb_rcv, to_rcv-nb_rcv);
-     printf("nbrcv : %d\n",nb_rcv);
    //} while (nb_rcv!=to_rcv);
    return buf;
   }
-
-  //clean up client socket
-// Clean up server socket
-void do_close(char* buf, int new_sock){
-  //printf("retour strcmp : %d\n", strcmp(buf,"/quit")-10);
-  if (strcmp(buf,"/quit")==0){
-    printf("La socket côté serveur est fermée");
-    fflush(stdout);
-    close(new_sock);
-    free(buf);
-  }
-}
 
 
 // We write back to the client
 void do_write(char* buf, int new_sock){
   //send(sock, &msg, ,0);
-  char* message = malloc(sizeof (char) * (MSG_MAXLEN+100));
+  //char* message = malloc(sizeof (char) * (MSG_MAXLEN+100));
   //message="[Server]: ";
   //strcat(message,buf);
 
@@ -212,8 +199,17 @@ void do_write(char* buf, int new_sock){
   // int to_send=strlen(&buf);
   //do{
     //sent+= write(new_sock,buf+sent,strlen(buf)-sent);
+    printf("write : %s", buf);
     write(new_sock,buf,MSG_MAXLEN);
 
   //  } while (sent!=to_send);
 
+}
+
+// Cleanup socket
+void do_close(int sock_closed){
+  printf("=== Socket %d closed === \n", sock_closed);
+  fflush(stdout);
+  close(sock_closed);
+  // Supprimer la socket de la structure de tableau fds
 }

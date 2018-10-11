@@ -21,6 +21,7 @@ struct sockaddr_in init_serv_addr(int);
 void do_bind(int, struct sockaddr_in);
 void do_listen(int, struct sockaddr_in);
 int do_accept(struct sockaddr_in, int);
+int TestTooManyC(struct pollfd*, int, int, int, struct sockaddr_in);
 char* do_read(int);
 void do_write(char*, int);
 void do_close(char*, int);
@@ -63,23 +64,11 @@ int main(int argc, char** argv) {
     int current_size = nfds;
 
     if(fds[0].revents == POLLIN) {
-      printf("Nouveau client essaie de se connecter\n");
-
-      if (nfds<2){
-        int new_sock=do_accept(saddr_in,sock);
-        printf("etape : accept\n");
-        fds[nfds].fd = new_sock;
-        fds[nfds].events = POLLIN;
-        nfds++;
-      }
-      else {
-        int new_sock=do_accept(saddr_in,sock);
-        printf("etape : accept socket de trop\n");
-        char* refused = malloc(sizeof (char) * (100));
-        refused="Server cannot accept incoming connections anymore. Try again later.";
-        write(new_sock,refused,MSG_MAXLEN);
-        close(new_sock);
-      }
+      printf("New client\n");
+      int new_sock=do_accept(saddr_in,sock);
+      int nfds_test=TestTooManyC(fds, nfds, sock, new_sock, saddr_in);
+      if (nfds_test!=0)
+        nfds=nfds_test;
     }
 
     // Test pour trouver les sockets en activité
@@ -103,6 +92,7 @@ int main(int argc, char** argv) {
   }
   printf("=== Socket %d closed === \n", sock_closed); // ERREUR !!
   close(sock_closed);
+
   return 0;
 }
 
@@ -161,6 +151,23 @@ int do_accept(struct sockaddr_in saddr_in, int sock) {
     exit(EXIT_FAILURE);
   }
   return new_sock;
+}
+
+
+int TestTooManyC(struct pollfd* fds, int nfds, int sock, int new_sock, struct sockaddr_in saddr_in){
+  if (nfds<2){
+    fds[nfds].fd = new_sock;
+    fds[nfds].events = POLLIN;
+    nfds++;
+    return nfds;
+  }
+  else {
+    char* refused = malloc(sizeof (char) * (100));
+    refused="Server cannot accept incoming connections anymore. Try again later.";
+    write(new_sock,refused,MSG_MAXLEN);
+    close(new_sock);
+    return 0;
+  }
 }
 
 // Read what the client has to say

@@ -102,12 +102,6 @@ char* readline(int sock){
 // Send message to the server
 void handle_client_message(char* msg, int sock){
    int sent=0, msg_intsize=strlen(msg);
-  // char size_msg[MSG_MAXLEN];
-  // sprintf(size_msg, "%d", msg_intsize);
-  // strcat(size_msg, "|");
-  // strcat(size_msg, msg);
-  // printf("%s\n",size_msg);
-  // sent= write(sock,size_msg,strlen(msg));
   sent= write(sock,msg,strlen(msg));
 }
 
@@ -115,12 +109,7 @@ void handle_client_message(char* msg, int sock){
 int handle_server_message(int sock){
   char* bufc = malloc(sizeof (char) * 100);
   bzero(bufc,MSG_MAXLEN);
-  int nb_rcv =0;
-  int to_rcv=strlen(bufc);
-  //do{
-    //nb_rcv+=read(sock,bufc+nb_rcv, strlen(bufc)-nb_rcv);// PAS DU TOUT SUR QUE CE SOIT CA
-    read(sock,bufc, MSG_MAXLEN);
-  //} while (nb_rcv!=to_rcv);
+  read(sock,bufc, MSG_MAXLEN);
   printf("\nReceiving : \n   [Server] : %s\n", bufc);
   if (strcmp(bufc,"Server cannot accept incoming connections anymore. Try again")==0){
     return 1;

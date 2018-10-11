@@ -156,7 +156,7 @@ int do_accept(struct sockaddr_in saddr_in, int sock) {
 
 /* -------------- Accept 20 concurrent client -------------- */
 int TestTooManyC(struct pollfd* fds, int nfds, int sock, int new_sock, struct sockaddr_in saddr_in){
-  if (nfds<2){
+  if (nfds<20){
     fds[nfds].fd = new_sock;
     fds[nfds].events = POLLIN;
     nfds++;
@@ -188,28 +188,16 @@ char* do_read(int new_sock){
   }
 
 
-// We write back to the client
-void do_write(char* buf, int new_sock){
-  //send(sock, &msg, ,0);
-  //char* message = malloc(sizeof (char) * (MSG_MAXLEN+100));
-  //message="[Server]: ";
-  //strcat(message,buf);
-
-  //int sent=0;
-  // int to_send=strlen(&buf);
-  //do{
-    //sent+= write(new_sock,buf+sent,strlen(buf)-sent);
-    printf("write : %s", buf);
-    write(new_sock,buf,MSG_MAXLEN);
-
-  //  } while (sent!=to_send);
-
-}
-
 // Cleanup socket
 void do_close(int sock_closed){
   printf("=== Socket %d closed === \n", sock_closed);
   fflush(stdout);
   close(sock_closed);
   // Supprimer la socket de la structure de tableau fds
+}
+
+/* -------------- We write back to the client -------------- */
+void do_write(char* buf, int new_sock){
+    printf("write : %s", buf);
+    write(new_sock,buf,MSG_MAXLEN);
 }

@@ -11,7 +11,7 @@
 #include <arpa/inet.h>
 
 
-#define MSG_MAXLEN 60
+#define MSG_MAXLEN 200
 
 // Prototypes
 int do_socket();
@@ -99,6 +99,13 @@ char* readline(int sock){
   return msg;
 }
 
+// char size_msg[MSG_MAXLEN];
+  // sprintf(size_msg, "%d", msg_intsize);
+  // strcat(size_msg, "|");
+  // strcat(size_msg, msg);
+  // printf("%s\n",size_msg);
+  // sent= write(sock,size_msg,strlen(msg));
+
 // Send message to the server
 void handle_client_message(char* msg, int sock){
    int sent=0, msg_intsize=strlen(msg);
@@ -107,7 +114,7 @@ void handle_client_message(char* msg, int sock){
 
 // Read what the client has to say
 int handle_server_message(int sock){
-  char* bufc = malloc(sizeof (char) * 100);
+  char* bufc = malloc(sizeof (char) * MSG_MAXLEN);
   bzero(bufc,MSG_MAXLEN);
   read(sock,bufc, MSG_MAXLEN);
   printf("\nReceiving : \n   [Server] : %s\n", bufc);

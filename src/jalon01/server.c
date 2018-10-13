@@ -5,7 +5,11 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <time.h>
 #include <sys/poll.h>
+
+#include "structure_client.h"
+#include "server.h"
 
 void error(const char *msg)
 {
@@ -14,17 +18,8 @@ void error(const char *msg)
 }
 
 #define MSG_MAXLEN 200
+#define CMD_MAXLEN 10
 
-// Décalaration des prototypes de fonctions
-int do_socket();
-struct sockaddr_in init_serv_addr(int);
-void do_bind(int, struct sockaddr_in);
-void do_listen(int, struct sockaddr_in);
-int do_accept(struct sockaddr_in, int);
-int TestTooManyC(struct pollfd*, int, int, int, struct sockaddr_in);
-char* do_read(int);
-void do_write(char*, int);
-void do_close(int);
 
 /* -------------- Main -------------- */
 int main(int argc, char** argv) {
@@ -174,17 +169,21 @@ int TestTooManyC(struct pollfd* fds, int nfds, int sock, int new_sock, struct so
 /* -------------- Read what the client has to say -------------- */
 char* do_read(int new_sock){
   char* buf = malloc(sizeof (char) * MSG_MAXLEN);
-  char* size = malloc(sizeof (char) * MSG_MAXLEN);
-  bzero(buf, MSG_MAXLEN);
-  bzero(size, MSG_MAXLEN);
-  read(new_sock,buf, MSG_MAXLEN);
-  strncpy(size, buf, 10); // Le faire plus tard en reperant le |
-  int nb_rcv =10;
-  int to_rcv=atoi(size);
+  char* cmd = malloc(sizeof (char) * CMD_MAXLEN);
+//  while ( (strcmp(c," ")==0) || (cpt>MSG_MAXLEN) ){ // Pas du tout optimisé
+
+
+  //read(new_sock, cmd, CMD_MAXLEN);
+  //printf("%s", cmd);
+
+read(new_sock, buf, MSG_MAXLEN);
+
+  //int to_rcv=atoi(size);
   //do{
-     nb_rcv+=read(new_sock,buf+nb_rcv, to_rcv-nb_rcv);
+     //nb_rcv+=read(new_sock,buf+nb_rcv, to_rcv-nb_rcv);
    //} while (nb_rcv!=to_rcv);
-   return buf;
+  // return buf;
+  return buf;
   }
 
 

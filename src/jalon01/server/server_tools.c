@@ -8,93 +8,11 @@
 #include <time.h>
 #include <sys/poll.h>
 
-#include "structure_client.h"
-#include "server.h"
-
-void error(const char *msg)
-{
-    perror(msg);
-    exit(1);
-}
+#include "server_strc_clt.h"
+#include "server_tools.h"
 
 #define MSG_MAXLEN 200
 #define CMD_MAXLEN 10
-
-
-/* -------------- Main -------------- */
-int main(int argc, char** argv) {
-
-  // Test nombre d'arguments
-  if (argc != 2) {
-      fprintf(stderr, "usage: RE216_SERVER port\n"); // Il faut donner le port de la socket coté client ??
-      return 1;
-  }
-
-  // Mise en place de la socket d'écoute
-  int sv_port=atoi(argv[1]);
-  int sock=do_socket();
-  struct sockaddr_in saddr_in=init_serv_addr(sv_port);
-  do_bind(sock, saddr_in);
-  do_listen(sock, saddr_in);
-
-  // Definition du tableau de structures pollfd
-  struct pollfd fds[20];
-  int n;
-  int nfds=1;
-  int timeout=-1;
-  memset(fds, 0 , sizeof(fds));
-
-  // Initialisation du tableau avec la première socket serveur en activité
-  fds[0].fd=sock;
-  fds[0].events = POLLIN;
-
-  // fd ce la socket à fermer
-  int sock_closed;
-
-  // Acceptation puis read et write tant que la socket n'est pas fermée
-  for(;;)
-  {
-    // Nombre de socket en activité
-    n=poll(fds, nfds, timeout);
-
-    // Acceptation de nouveau clients si premiere socket en activité
-    if(fds[0].revents == POLLIN) {
-      printf("New client\n");
-      int new_sock=do_accept(saddr_in,sock);
-      int nfds_test=TestTooManyC(fds, nfds, sock, new_sock, saddr_in);
-      if (nfds_test!=0)
-        nfds=nfds_test;
-    }
-
-    // Read et write sur les sockets en activité (sauf socket d'écoute)
-    int current_size = nfds;
-    for(int i=0; i<current_size ; i++){
-
-      if ( i!=0 && fds[i].revents == POLLIN){
-
-        // read
-        char* buf;
-        buf=do_read(fds[i].fd);
-        printf("read : %s", buf);
-
-        //Test quit
-        if(strcmp("/quit\n", buf) == 0) {
-          sock_closed=fds[i].fd;
-          printf("=== Socket %d closed ===\n",sock_closed);
-          break;
-        }
-
-        // write
-        do_write(buf, fds[i].fd);
-      }
-    }
-  }
-  // Fermeture socket
-do_close(sock_closed);
-
-
-  return 0;
-}
 
 /* -------------- Create the socket and check the validity -------------- */
 int do_socket(){
@@ -187,16 +105,17 @@ read(new_sock, buf, MSG_MAXLEN);
   }
 
 
-// Cleanup socket
-void do_close(int sock_closed){
-  printf("=== Socket %d closed === \n", sock_closed);
-  fflush(stdout);
-  close(sock_closed);
-  // Supprimer la socket de la structure de tableau fds
-}
-
 /* -------------- We write back to the client -------------- */
 void do_write(char* buf, int new_sock){
     printf("write : %s", buf);
     write(new_sock,buf,MSG_MAXLEN);
+}
+
+// Cleanup socket
+void do_close(int sock_closed, struct clt* first_client){
+  printf("=== Socket %d closed === \n", sock_closed);
+  // Mettre client_free(first_client,sock_closed);
+  fflush(stdout);
+  close(sock_closed);
+  // Supprimer la socket de la structure de tableau fds
 }

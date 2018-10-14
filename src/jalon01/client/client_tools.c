@@ -10,61 +10,19 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#include "client_tools.h"
 
 #define MSG_MAXLEN 200
-
-// Prototypes
-int do_socket();
-struct sockaddr_in init_host_addr(char*,int);
-void do_connect (struct sockaddr_in, int);
-char* readline(int);
-void handle_client_message(char*, int);
-int handle_server_message(int);
-
-// Main
-int main(int argc,char** argv)
-{
-
-    if (argc != 3)
-    {
-        fprintf(stderr,"usage: RE216_CLIENT hostname port\n");
-        return 1;
-    }
-
-    //get address info from the server
-    //get_addr_info()
-    char* sv_addr=argv[1]; // adresse du serveur (127.0.0.1)
-    short n_port=atoi(argv[2]); //numéro de port de la socket côté serveur (quand connect)
-
-    int sock=do_socket();
-    struct sockaddr_in sock_host=init_host_addr(sv_addr, n_port);
-    //struct sockaddr_in* p=&sock_host;
-    do_connect(sock_host, sock);
-    for (;;){
-      char* msg=readline(sock);
-      handle_client_message(msg, sock);
-      if (strcmp(msg,"/quit\n")==0)
-        break;
-      int too_clients=handle_server_message(sock);
-      if (too_clients==1){
-        break;
-      }
-    }
-    printf("=== Socket closed === \n");
-    close(sock);
-
-    return 0;
-}
 
 // Get the socket
 int do_socket(){
   int sock;
   sock = socket(AF_INET, SOCK_STREAM, 0);
+  setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &(int){ 1 }, sizeof(int));
   if (sock==-1){
     perror("socket");
     exit(EXIT_FAILURE);
   }
-  setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &(int){ 1 }, sizeof(int));
   return sock;
 }
 

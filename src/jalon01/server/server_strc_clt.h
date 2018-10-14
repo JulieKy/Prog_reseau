@@ -1,4 +1,12 @@
-struct clt;
+// Definition de la structure client
+struct clt {
+  int sockfd;
+  char* psd;
+  // char* date;
+  // int port;
+  // int IP; // A CHANGER
+  struct clt* next;
+};
 
 // Create a new list of clients
 struct clt* client_list_init();

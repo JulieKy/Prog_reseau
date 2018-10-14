@@ -8,17 +8,6 @@
 
 #include "server_strc_clt.h"
 
-
-// Definition de la structure client
-struct clt {
-  int sockfd;
-  // char pseudo;
-  // char* date;
-  // int port;
-  // int IP; // A CHANGER
-  struct clt* next;
-};
-
 struct clt* client_list_init() {
   struct clt* list_client= malloc(sizeof(*list_client));
   list_client=NULL;
@@ -32,7 +21,7 @@ struct clt* client_new(int sockfd){
   if (!new_client)
     perror("Creation new client : memory error");
   new_client->sockfd=sockfd;
-  // new_client->pseudo=pseudo;
+  new_client->psd="";
   // new_client->date=date;
   // new_client->port=port;
   // new_client->IP=IP;
@@ -52,11 +41,11 @@ struct clt* client_add(struct clt* first_client, int sockfd){
 }
 
 struct clt* client_find(struct clt* first_client, int sock){
-  struct clt* removed_client=first_client;
-//  while (removed_client->sockfd!=sock)
-    removed_client=removed_client->next;
-  printf("client found\n");
-  return removed_client;
+  struct clt* found_client=first_client;
+  while (found_client!=NULL && found_client->sockfd!=sock){
+    found_client=found_client->next;
+  }
+  return found_client;
 }
 
 void client_free(struct clt* first_client, int sock){

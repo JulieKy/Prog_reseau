@@ -60,15 +60,13 @@ int main(int argc, char** argv) {
 
     // Acceptation de nouveau clients si premiere socket en activité
     if(fds[0].revents == POLLIN) {
-      printf("New client\n");
       int new_sock=do_accept(saddr_in,sock);
       int nfds_test=TestTooManyC(fds, nfds, sock, new_sock, saddr_in);
       if (nfds_test!=0)
         nfds=nfds_test;
       // Ajout du client à la liste
-      first_client=client_add(first_client, sock);
+      first_client=client_add(first_client, new_sock);
       int nb_clt= nbre_client(first_client);
-      printf("Taille de la liste : %d\n",nb_clt);
       logon(new_sock, first_client);
     }
 

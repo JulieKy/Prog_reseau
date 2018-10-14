@@ -132,17 +132,22 @@ void logon(int new_sock, struct clt* first_client){
   buf = do_read(new_sock);
   msg_con="Please logon with /nick <yourpseudo>\n";
   sscanf(buf, "%s %s" , cmd, pseudo); // dans cmd on récupère le premier mot et dans pseudo le deuxieme
-  msg_con2="Hello pseudo\n";
+  msg_con2="Hello pseudo\n"; // Il faudra mettre le vrai pseudo
 
   while ((strcmp("/nick", cmd) != 0) && (strcmp("\n", pseudo) != 0)){
     write(new_sock,msg_con,MSG_MAXLEN);
+    buf = do_read(new_sock);
     sscanf(buf, "%s %s" , cmd, pseudo);
   }
 
   write(new_sock,msg_con2,MSG_MAXLEN);
   printf("cmd:%s\n",cmd);
   printf("pseudo: %s\n", pseudo);
-  //il reste à mettre dans la structure le pseudo récupéré (trouver le bon client et lui rentrer le pseudo)
+
+  // Mise à jour du pseudo
+  struct clt* client=client_find(first_client, new_sock);
+  client->psd=pseudo;
+  printf("Le pseudo du client est : %s\n",client->psd);
 }
 
 

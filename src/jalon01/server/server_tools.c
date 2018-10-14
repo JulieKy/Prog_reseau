@@ -94,7 +94,7 @@ char* do_read(int new_sock){
   //read(new_sock, cmd, CMD_MAXLEN);
   //printf("%s", cmd);
 
-read(new_sock, buf, MSG_MAXLEN);
+  read(new_sock, buf, MSG_MAXLEN);
 
   //int to_rcv=atoi(size);
   //do{
@@ -118,4 +118,62 @@ void do_close(int sock_closed, struct clt* first_client){
   fflush(stdout);
   close(sock_closed);
   // Supprimer la socket de la structure de tableau fds
+}
+
+
+/* -------------- Ask the pseudo to the client at the first connection -------------- */
+void logon(int new_sock, struct clt* first_client){
+  char* msg_con = malloc(sizeof (char) * MSG_MAXLEN);
+  char* msg_con2 = malloc(sizeof (char) * MSG_MAXLEN);
+  char* cmd = malloc(sizeof (char) * MSG_MAXLEN);
+  char* pseudo = malloc(sizeof (char) * MSG_MAXLEN);
+  char* buf = malloc(sizeof (char) * MSG_MAXLEN);
+
+  buf = do_read(new_sock);
+  msg_con="Please logon with /nick <yourpseudo>\n";
+  sscanf(buf, "%s %s" , cmd, pseudo); // dans cmd on récupère le premier mot et dans pseudo le deuxieme
+  msg_con2="Hello pseudo\n";
+
+  while ((strcmp("/nick", cmd) != 0) && (strcmp("\n", pseudo) != 0)){
+    write(new_sock,msg_con,MSG_MAXLEN);
+    sscanf(buf, "%s %s" , cmd, pseudo);
+  }
+
+  write(new_sock,msg_con2,MSG_MAXLEN);
+  printf("cmd:%s\n",cmd);
+  printf("pseudo: %s\n", pseudo);
+  //il reste à mettre dans la structure le pseudo récupéré (trouver le bon client et lui rentrer le pseudo)
+}
+
+
+/* -------------- Test the different queries possible -------------- */
+void TestCmd(char *buf){
+
+  char* cmd = malloc(sizeof (char) * MSG_MAXLEN);
+  char* msg = malloc(sizeof (char) * MSG_MAXLEN);
+  int l;
+
+  sscanf(buf, "%s %s" , cmd, msg);
+  if(strcmp("/quit",cmd)==0){
+    printf("recu /quit\n");
+  }
+
+  if(strcmp("/nick", cmd) == 0) {
+    printf("Le client entre son pseudo\n");
+    if (strcmp("", msg) ==0){
+      printf("Veuillez entrer un pseudo\n"); // en vrai on doit envoyer un message pour que ça s'affiche coté client
+    }
+    else{
+      printf("Nouveau pseudo %s\n", msg);
+      // on récupère ce qu'il y a dans msg et on le met dand pseudo de la structure client
+    }
+  }
+
+  if(strcmp("/who", cmd) == 0) {
+    printf("Le client veut consulter la liste des clients connectés\n");
+    // envoyer un message cote client pour lui donner l'intégralité des clients connectés
+  }
+  if(strcmp("/whois", cmd) == 0) {
+    // envoyer un message cote client pour lui donner les informations sur le client qu'il demande
+  }
 }

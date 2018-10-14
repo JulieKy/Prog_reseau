@@ -69,6 +69,7 @@ int main(int argc, char** argv) {
       first_client=client_add(first_client, sock);
       int nb_clt= nbre_client(first_client);
       printf("Taille de la liste : %d\n",nb_clt);
+      logon(new_sock, first_client);
     }
 
 

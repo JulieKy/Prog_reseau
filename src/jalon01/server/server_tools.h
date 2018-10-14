@@ -17,3 +17,7 @@ void do_write(char*, int);
 
 void do_close(int, struct clt*);
 
+void logon(int, struct clt*);
+
+void TestCmd(char*);
+

@@ -6,6 +6,9 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
+#include <arpa/inet.h>
+#include <time.h>
+
 #include "server_strc_clt.h"
 
 struct clt* client_list_init() {
@@ -16,23 +19,30 @@ struct clt* client_list_init() {
 
 
 //struct clt* client_new(int sockfd, char pseudo, char* date, int port, int IP){
-struct clt* client_new(int sockfd){
+struct clt* client_new(int sockfd, struct sockaddr_in saddr_in){
   struct clt* new_client=malloc(sizeof(*new_client));
   if (!new_client)
     perror("Creation new client : memory error");
   new_client->sockfd=sockfd;
   new_client->psd="";
-  // new_client->date=date;
-  // new_client->port=port;
-  // new_client->IP=IP;
-  new_client->next=NULL;
-  return new_client;
-}
+
+//   time_t date_init=time(NULL);
+//   struct tm* date=localtime(&date);
+//   new_client->date=date;
+//
+//   int port=saddr_in.sin_port;
+//   new_client->port=port;
+//
+//   char* IP = inet_atoa(saddr_in.sin_addr);
+//   new_client->IP=IP;
+//   new_client->next=NULL;
+   return new_client;
+ }
 
 //struct clt* client_add(struct clt* client, int sockfd, char pseudo, char* date, int port, int IP){
-struct clt* client_add(struct clt* first_client, int sockfd){
+struct clt* client_add(struct clt* first_client, int sockfd, struct sockaddr_in saddr_in){
   //struct clt* new_client=client_new(sockfd, pseudo, date, port, IP);
-  struct clt* new_client=client_new(sockfd);
+  struct clt* new_client=client_new(sockfd, saddr_in);
   // Ajout en début de liste
   new_client->next=first_client;
   first_client=new_client;
@@ -44,6 +54,7 @@ struct clt* client_find(struct clt* first_client, int sock){
   struct clt* found_client=first_client;
   while (found_client!=NULL && found_client->sockfd!=sock){
     found_client=found_client->next;
+    printf("find client\n");
   }
   return found_client;
 }

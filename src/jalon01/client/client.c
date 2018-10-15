@@ -29,9 +29,8 @@ int main(int argc,char** argv)
 
     int sock=do_socket();
     struct sockaddr_in sock_host=init_host_addr(sv_addr, n_port);
-    //struct sockaddr_in* p=&sock_host;
     do_connect(sock_host, sock);
-    printf("connect\n");
+    send_pseudo(sock);
     for (;;){
       char* msg=readline(sock);
       handle_client_message(msg, sock);

@@ -45,14 +45,14 @@ void do_connect (struct sockaddr_in sock_host, int sock){
     perror("connection");
     exit(EXIT_FAILURE);
   }
-  printf("Connecting to server ... done!\n");
+  printf("Connecting to server ... done!\n\n");
 }
 
 // Get user input
 char* readline(int sock){
   char* msg = malloc(sizeof (char) * MSG_MAXLEN);
   memset(msg, '\0', MSG_MAXLEN);
-  printf("\n------- \nSending : ");
+  printf("[From you] : ");
   fgets(msg,MSG_MAXLEN,stdin);
   return msg;
 }
@@ -63,6 +63,32 @@ char* readline(int sock){
   // strcat(size_msg, msg);
   // printf("%s\n",size_msg);
   // sent= write(sock,size_msg,strlen(msg));
+
+void send_pseudo(int sock){
+  char* buf = malloc(sizeof (char) * MSG_MAXLEN);
+  memset(buf, '\0', MSG_MAXLEN);
+  char* cmd = malloc(sizeof (char) * MSG_MAXLEN);
+  memset(cmd, '\0', MSG_MAXLEN);
+  char* pseudo = malloc(sizeof (char) * MSG_MAXLEN);
+  memset(pseudo, '\0', MSG_MAXLEN);
+  printf("Please logon with /nick <yourpseudo>. Your pseudo must be 2 letters long\n");
+  buf=readline(sock);
+  sscanf(buf, "%s %s" , cmd, pseudo);
+
+  while ((strcmp("/nick", cmd) != 0) || (strlen(pseudo)<2)){
+    printf("[Server] : Please logon with /nick <yourpseudo>. Your pseudo must be 2 letters long\n\n");
+    buf=readline(sock);
+    sscanf(buf, "%s %s" , cmd, pseudo);
+  }
+  printf("Welcome on the chat %s\n\n", pseudo);
+  char* msg_con = malloc(sizeof (char) * MSG_MAXLEN);
+  char* cmd_pseudo = malloc(sizeof (char) * MSG_MAXLEN);
+  cmd_pseudo="pseudo0K";
+  sscanf(msg_con, "%s %s" , cmd_pseudo, pseudo);
+  write(sock,msg_con,MSG_MAXLEN);
+  printf("cmd:%s\n",cmd);
+  printf("pseudo: %s\n", pseudo);
+}
 
 // Send message to the server
 void handle_client_message(char* msg, int sock){
@@ -75,7 +101,7 @@ int handle_server_message(int sock){
   char* bufc = malloc(sizeof (char) * MSG_MAXLEN);
   bzero(bufc,MSG_MAXLEN);
   read(sock,bufc, MSG_MAXLEN);
-  printf("\nReceiving : \n   [Server] : %s\n", bufc);
+  printf("[Server] : %s\n", bufc);
   if (strcmp(bufc,"Server cannot accept incoming connections anymore. Try again")==0){
     return 1;
   }

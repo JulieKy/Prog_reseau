@@ -57,21 +57,17 @@ char* readline(int sock){
   return msg;
 }
 
-// char size_msg[MSG_MAXLEN];
-  // sprintf(size_msg, "%d", msg_intsize);
-  // strcat(size_msg, "|");
-  // strcat(size_msg, msg);
-  // printf("%s\n",size_msg);
-  // sent= write(sock,size_msg,strlen(msg));
 
 void send_pseudo(int sock){
+
   char* buf = malloc(sizeof (char) * MSG_MAXLEN);
   memset(buf, '\0', MSG_MAXLEN);
-  char* cmd = malloc(sizeof (char) * MSG_MAXLEN);
-  memset(cmd, '\0', MSG_MAXLEN);
-  char* pseudo = malloc(sizeof (char) * MSG_MAXLEN);
-  memset(pseudo, '\0', MSG_MAXLEN);
-  printf("Please logon with /nick <yourpseudo>. Your pseudo must be 2 letters long\n");
+
+  char cmd[MSG_MAXLEN];
+  char pseudo[MSG_MAXLEN];
+
+  printf("Please login with /nick <yourpseudo>. Your pseudo must be more than one letter.
+  \n");
   buf=readline(sock);
   sscanf(buf, "%s %s" , cmd, pseudo);
 
@@ -80,14 +76,12 @@ void send_pseudo(int sock){
     buf=readline(sock);
     sscanf(buf, "%s %s" , cmd, pseudo);
   }
-  printf("Welcome on the chat %s\n\n", pseudo);
+  printf("[Server] : Welcome on the chat %s\n\n", pseudo);
   char* msg_con = malloc(sizeof (char) * MSG_MAXLEN);
   char* cmd_pseudo = malloc(sizeof (char) * MSG_MAXLEN);
-  cmd_pseudo="pseudo0K";
-  sscanf(msg_con, "%s %s" , cmd_pseudo, pseudo);
+  cmd_pseudo="pseudoOK";
+  sprintf(msg_con, "%s %s" , cmd_pseudo, pseudo);
   write(sock,msg_con,MSG_MAXLEN);
-  printf("cmd:%s\n",cmd);
-  printf("pseudo: %s\n", pseudo);
 }
 
 // Send message to the server

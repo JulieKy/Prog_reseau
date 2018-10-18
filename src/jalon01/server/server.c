@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
   fds[0].fd=sock;
   fds[0].events = POLLIN;
 
-  // fd ce la socket à fermer
+  // fd de la socket à fermer
   int sock_closed;
 
   // Acceptation puis read et write tant que la socket n'est pas fermée
@@ -58,20 +58,19 @@ int main(int argc, char** argv) {
     // Nombre de socket en activité
     n=poll(fds, nfds, timeout);
 
-    // Acceptation de nouveau clients si premiere socket en activité
+    // Acceptation de nouveaux clients si première socket en activité
     if(fds[0].revents == POLLIN) {
       int new_sock=do_accept(saddr_in,sock);
-      printf("ma socket est : %d\n", new_sock);
-      int nfds_test=TestTooManyC(fds, nfds, sock, new_sock, saddr_in);
+      printf(">> Le numéro de socket du nouveau client est : %d\n", new_sock);
+      int nfds_test=test_nb_users(fds, nfds, sock, new_sock, saddr_in);
       if (nfds_test!=0)
         nfds=nfds_test;
       // Ajout du client à la liste
       first_client=client_add(first_client, new_sock, saddr_in);
       int nb_clt= nbre_client(first_client);
-      printf("nombre de client: %d\n", nb_clt);
+      printf(">> Nombre de clients connecté au serveur: %d\n", nb_clt);
       // Demande le pseudo
       ask_pseudo(new_sock);
-      //logon(new_sock, first_client);
     }
 
 
@@ -85,8 +84,8 @@ int main(int argc, char** argv) {
         // read
         char* buf;
         buf=do_read(fds[i].fd);
-        printf("read : %s", buf);
-        TestCmd(buf, first_client, fds[i].fd);
+        printf("read : %s\n", buf);
+        test_cmd(buf, first_client, fds[i].fd);
 
         //Test quit
         if(strcmp("/quit\n", buf) == 0) {

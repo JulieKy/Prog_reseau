@@ -46,7 +46,6 @@ struct clt* client_add(struct clt* first_client, int sockfd, struct sockaddr_in 
   // Ajout en début de liste
   new_client->next=first_client;
   first_client=new_client;
-  printf("client add\n");
   return first_client;
 }
 

@@ -68,7 +68,7 @@ int do_accept(struct sockaddr_in saddr_in, int sock) {
 }
 
 /* -------------- Accept 20 concurrent client -------------- */
-int TestTooManyC(struct pollfd* fds, int nfds, int sock, int new_sock, struct sockaddr_in saddr_in){
+int test_nb_users(struct pollfd* fds, int nfds, int sock, int new_sock, struct sockaddr_in saddr_in){
   if (nfds<20){
     fds[nfds].fd = new_sock;
     fds[nfds].events = POLLIN;
@@ -84,30 +84,26 @@ int TestTooManyC(struct pollfd* fds, int nfds, int sock, int new_sock, struct so
   }
 }
 
+/* -------------- Ask clients to give their pseudo -------------- */
+void ask_pseudo(int new_sock){
+  char* msg_pseudo = malloc(sizeof (char) * MSG_MAXLEN);
+  msg_pseudo="pseudo";
+  write(new_sock,msg_pseudo,MSG_MAXLEN);
+}
+
+
 /* -------------- Read what the client has to say -------------- */
 char* do_read(int new_sock){
   char* buf = malloc(sizeof (char) * MSG_MAXLEN);
   char* cmd = malloc(sizeof (char) * CMD_MAXLEN);
-//  while ( (strcmp(c," ")==0) || (cpt>MSG_MAXLEN) ){ // Pas du tout optimisé
-
-
-  //read(new_sock, cmd, CMD_MAXLEN);
-  //printf("%s", cmd);
-
   read(new_sock, buf, MSG_MAXLEN);
-
-  //int to_rcv=atoi(size);
-  //do{
-     //nb_rcv+=read(new_sock,buf+nb_rcv, to_rcv-nb_rcv);
-   //} while (nb_rcv!=to_rcv);
-  // return buf;
   return buf;
   }
 
 
 /* -------------- We write back to the client -------------- */
 void do_write(char* buf, int new_sock){
-    printf("write : %s", buf);
+    printf("write : %s\n", buf);
     write(new_sock,buf,MSG_MAXLEN);
 }
 
@@ -121,60 +117,22 @@ void do_close(int sock_closed, struct clt* first_client){
 }
 
 
-void ask_pseudo(int new_sock){
-  char* msg_pseudo = malloc(sizeof (char) * MSG_MAXLEN);
-  msg_pseudo="pseudo";
-  write(new_sock,msg_pseudo,MSG_MAXLEN);
-}
-
-/* -------------- Ask the pseudo to the client at the first connection -------------- */
-void logon(int new_sock, struct clt* first_client){
-  // char* msg_con = malloc(sizeof (char) * MSG_MAXLEN);
-  // char* msg_con2 = malloc(sizeof (char) * MSG_MAXLEN);
-  // char* cmd = malloc(sizeof (char) * MSG_MAXLEN);
-  // char* pseudo = malloc(sizeof (char) * MSG_MAXLEN);
-  // char* buf = malloc(sizeof (char) * MSG_MAXLEN);
-  //
-  // buf = do_read(new_sock);
-  // msg_con="Please logon with /nick <yourpseudo>. Your pseudo must be 2 letters long\n";
-  // sscanf(buf, "%s %s" , cmd, pseudo); // dans cmd on récupère le premier mot et dans pseudo le deuxieme
-  //
-  // while ((strcmp("/nick", cmd) != 0) || (strlen(pseudo)<2)){
-  //   write(new_sock,msg_con,MSG_MAXLEN);
-  //   buf = do_read(new_sock);
-  //   printf("try to read cmd\n");
-  //   sscanf(buf, "%s %s" , cmd, pseudo);
-  // }
-  // sprintf(msg_con2, "Welcome on the chat %s", pseudo);
-  // write(new_sock,msg_con2,MSG_MAXLEN);
-  // printf("cmd:%s\n",cmd);
-  // printf("pseudo: %s\n", pseudo);
-
-  // Mise à jour du pseudo
-
-}
-
-
-/* -------------- Test the different queries possible -------------- */
-void TestCmd(char *buf, struct clt* first_client, int sock){
+/* -------------- Test the different queries -------------- */
+void test_cmd(char *buf, struct clt* first_client, int sock){
 
   char* cmd = malloc(sizeof (char) * MSG_MAXLEN);
   char* msg = malloc(sizeof (char) * MSG_MAXLEN);
-  int l;
 
   sscanf(buf, "%s %s" , cmd, msg);
-  printf("cmd:%s\n",cmd);
-  printf("msg: %s\n", msg);
 
   if(strcmp("/quit",cmd)==0){
     printf("recu /quit\n");
   }
 
   if(strcmp("pseudoOK",cmd)==0){
-    printf("recu /pseudoOK\n");
     struct clt* client=client_find(first_client, sock);
     client->psd=msg;
-    printf("Le pseudo du client %d est : %s\n",sock, client->psd);
+    printf(">> Le pseudo du client %d est : %s\n",sock, client->psd);
   }
 
   if(strcmp("/nick", cmd) == 0) {

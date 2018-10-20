@@ -17,7 +17,7 @@ void do_write(char*, int);
 
 void do_close(int, struct clt*);
 
-void ask_pseudo(int);
+//void ask_pseudo(int);
 
-void test_cmd(char*, struct clt*, int);
+char* test_cmd(char*, struct clt*, int);
 

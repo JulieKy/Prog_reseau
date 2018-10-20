@@ -61,6 +61,10 @@ struct clt* client_find(struct clt* first_client, int sock){
 void client_free(struct clt* first_client, int sock){
   struct clt* removed_client=client_find(first_client,sock);
   struct clt* temp=first_client;
+
+  if (first_client==NULL)
+    //return NULL;
+
   if (first_client==removed_client){
     printf("suppression 1\n");
     if (first_client->next==NULL)
@@ -91,7 +95,6 @@ int nbre_client(struct clt* first_client){
     return c;
   }
 }
-
 
 
 

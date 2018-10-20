@@ -78,23 +78,26 @@ int test_nb_users(struct pollfd* fds, int nfds, int sock, int new_sock, struct s
   else {
     char* refused = malloc(sizeof (char) * (100));
     refused="Server cannot accept incoming connections anymore. Try again later.";
+    //memset(new_sock, '\0', MSG_MAXLEN);
     write(new_sock,refused,MSG_MAXLEN);
     close(new_sock);
     return 0;
   }
 }
 
-/* -------------- Ask clients to give their pseudo -------------- */
-void ask_pseudo(int new_sock){
-  char* msg_pseudo = malloc(sizeof (char) * MSG_MAXLEN);
-  msg_pseudo="pseudo";
-  write(new_sock,msg_pseudo,MSG_MAXLEN);
-}
+// /* -------------- Ask clients to give their pseudo -------------- */
+// void ask_pseudo(int new_sock){
+//   char* msg_pseudo = malloc(sizeof (char) * MSG_MAXLEN);
+//   msg_pseudo="pseudo";
+//   write(new_sock,msg_pseudo,MSG_MAXLEN);
+//   //memset(new_sock, '\0', MSG_MAXLEN);
+// }
 
 
 /* -------------- Read what the client has to say -------------- */
 char* do_read(int new_sock){
   char* buf = malloc(sizeof (char) * MSG_MAXLEN);
+  memset(buf, '\0', MSG_MAXLEN);
   char* cmd = malloc(sizeof (char) * CMD_MAXLEN);
   read(new_sock, buf, MSG_MAXLEN);
   return buf;
@@ -118,10 +121,15 @@ void do_close(int sock_closed, struct clt* first_client){
 
 
 /* -------------- Test the different queries -------------- */
-void test_cmd(char *buf, struct clt* first_client, int sock){
+char* test_cmd(char *buf, struct clt* first_client, int sock){
+
+  // test_cmd is 1 if a query is sent by the client, 0 otherwise.
+  int test_cmd;
+  test_cmd=1;
 
   char* cmd = malloc(sizeof (char) * MSG_MAXLEN);
   char* msg = malloc(sizeof (char) * MSG_MAXLEN);
+  char* rep = malloc(sizeof (char) * MSG_MAXLEN);
 
   sscanf(buf, "%s %s" , cmd, msg);
 
@@ -129,28 +137,39 @@ void test_cmd(char *buf, struct clt* first_client, int sock){
     printf("recu /quit\n");
   }
 
-  if(strcmp("pseudoOK",cmd)==0){
+  else if(strcmp("first_pseudo",cmd)==0){
     struct clt* client=client_find(first_client, sock);
     client->psd=msg;
     printf(">> Le pseudo du client %d est : %s\n",sock, client->psd);
+    char welcome[MSG_MAXLEN] = "Welcome on the chat";
+    sprintf(rep, "%s %s\n" , welcome, client->psd);
   }
 
-  if(strcmp("/nick", cmd) == 0) {
+  else if(strcmp("/nick", cmd) == 0) {
     printf("Le client entre son pseudo\n");
-    if (strcmp("", msg) ==0){
-      printf("Veuillez entrer un pseudo\n"); // en vrai on doit envoyer un message pour que ça s'affiche coté client
+    if (strlen(msg)<2){
+      rep ="Your pseudo must be 2 letters long\n";
     }
     else{
-      printf("Nouveau pseudo %s\n", msg);
-      // on récupère ce qu'il y a dans msg et on le met dand pseudo de la structure client
+      struct clt* client=client_find(first_client, sock);
+      client->psd=msg;
+      printf(">> Le nouveau pseudo du client %d est : %s\n",sock, client->psd);
+      char a[MSG_MAXLEN] = "Your new pseudo is";
+      sprintf(rep, "%s %s\n" , a, client->psd);
     }
   }
 
-  if(strcmp("/who", cmd) == 0) {
+  else if (strcmp("/who", cmd) == 0) {
     printf("Le client veut consulter la liste des clients connectés\n");
     // envoyer un message cote client pour lui donner l'intégralité des clients connectés
   }
-  if(strcmp("/whois", cmd) == 0) {
+  else if(strcmp("/whois", cmd) == 0) {
     // envoyer un message cote client pour lui donner les informations sur le client qu'il demande
   }
+
+  else
+    rep=buf;
+
+  return rep;
+
 }

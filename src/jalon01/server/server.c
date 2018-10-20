@@ -70,7 +70,7 @@ int main(int argc, char** argv) {
       int nb_clt= nbre_client(first_client);
       printf(">> Nombre de clients connecté au serveur: %d\n", nb_clt);
       // Demande le pseudo
-      ask_pseudo(new_sock);
+      //ask_pseudo(new_sock);
     }
 
 
@@ -85,7 +85,7 @@ int main(int argc, char** argv) {
         char* buf;
         buf=do_read(fds[i].fd);
         printf("read : %s\n", buf);
-        test_cmd(buf, first_client, fds[i].fd);
+        char* rep = test_cmd(buf, first_client, fds[i].fd);
 
         //Test quit
         if(strcmp("/quit\n", buf) == 0) {
@@ -100,8 +100,8 @@ int main(int argc, char** argv) {
           break;
         }
 
-        // write
-        do_write(buf, fds[i].fd);
+        // writ
+        do_write(rep, fds[i].fd);
       }
     }
   }

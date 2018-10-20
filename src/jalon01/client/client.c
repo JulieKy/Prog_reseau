@@ -22,21 +22,31 @@ int main(int argc,char** argv)
         return 1;
     }
 
-    //get address info from the server
-    //get_addr_info()
-    char* sv_addr=argv[1]; // adresse du serveur (127.0.0.1)
-    short n_port=atoi(argv[2]); //numéro de port de la socket côté serveur (quand connect)
+    // Get address info from the server
+    char* sv_addr=argv[1]; // Server adress (127.0.0.1)
+    short n_port=atoi(argv[2]); // Port number
 
+    // Socket creation and connection to the server with a pseudo
     int sock=do_socket();
     struct sockaddr_in sock_host=init_host_addr(sv_addr, n_port);
     do_connect(sock_host, sock);
-    send_pseudo(sock);
+    send_first_pseudo(sock);
+    do_read(sock);
+
     for (;;){
+
+      // Get a line from the terminal
       char* msg=readline(sock);
-      handle_client_message(msg, sock);
+
+      // Write to the server
+      do_write(msg, sock);
+
+      // Close the socket if /quit
       if (strcmp(msg,"/quit\n")==0)
         break;
-      int too_clients=handle_server_message(sock);
+
+      // Read a message and chack that there aren't too many users
+      int too_clients=do_read(sock);
       if (too_clients==1){
         break;
       }

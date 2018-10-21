@@ -138,7 +138,7 @@ char* test_cmd(char *buf, struct clt* first_client, int sock){
   }
 
   else if(strcmp("first_pseudo",cmd)==0){
-    struct clt* client=client_find(first_client, sock);
+    struct clt* client=client_find_sock(first_client, sock);
     client->psd=msg;
     printf(">> Le pseudo du client %d est : %s\n",sock, client->psd);
     char welcome[MSG_MAXLEN] = "Welcome on the chat";
@@ -151,7 +151,7 @@ char* test_cmd(char *buf, struct clt* first_client, int sock){
       rep ="Your pseudo must be 2 letters long\n";
     }
     else{
-      struct clt* client=client_find(first_client, sock);
+      struct clt* client=client_find_sock(first_client, sock);
       client->psd=msg;
       printf(">> Le nouveau pseudo du client %d est : %s\n",sock, client->psd);
       char a[MSG_MAXLEN] = "Your new pseudo is";
@@ -167,8 +167,14 @@ char* test_cmd(char *buf, struct clt* first_client, int sock){
       rep =who(first_client) ;
     }
   }
+
   else if(strcmp("/whois", cmd) == 0) {
-    // envoyer un message cote client pour lui donner les informations sur le client qu'il demande
+    printf(">> Le client veut consulter les informations d'un utilisateur : /whois <pseudo>\n");
+    if (strlen(msg)==0)
+      rep = "You have to specify the name of the user\n";
+    else {
+      rep =whois(first_client, msg);
+    }
   }
 
   else

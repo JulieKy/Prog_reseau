@@ -92,7 +92,7 @@ int main(int argc, char** argv) {
           sock_closed=fds[i].fd;
           printf("=== Socket %d closed ===\n",sock_closed); // NE pas laisser ici, le mettre dans le do_close
           struct clt* removed_client;
-          removed_client=client_find(first_client,sock_closed);
+          removed_client=client_find_sock(first_client,sock_closed);
           //client_free(first_client,sock_closed);
           printf("client_free\n");
           int nb_clt= nbre_client(first_client);
@@ -100,7 +100,7 @@ int main(int argc, char** argv) {
           break;
         }
 
-        // writ
+        // write
         do_write(rep, fds[i].fd);
       }
     }

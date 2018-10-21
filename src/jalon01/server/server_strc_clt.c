@@ -26,16 +26,22 @@ struct clt* client_new(int sockfd, struct sockaddr_in saddr_in){
   new_client->sockfd=sockfd;
   new_client->psd="unknown";
 
-//   time_t date_init=time(NULL);
-//   struct tm* date=localtime(&date);
-//   new_client->date=date;
-//
-//   int port=saddr_in.sin_port;
-//   new_client->port=port;
-//
-//   char* IP = inet_atoa(saddr_in.sin_addr);
-//   new_client->IP=IP;
-//   new_client->next=NULL;
+  // time_t date_init=time(NULL);
+  // struct tm* date=localtime(&date);
+  // new_client->date=date;
+
+  time_t t;
+  time_t date=time(&t);
+  new_client->date=date;
+  printf("date : %ld\n", date);
+
+
+  // int port=saddr_in.sin_port;
+  // new_client->port=port;
+  //
+  // char* IP = inet_atoa(saddr_in.sin_addr);
+  // new_client->IP=IP;
+  // new_client->next=NULL;
    return new_client;
  }
 
@@ -49,11 +55,26 @@ struct clt* client_add(struct clt* first_client, int sockfd, struct sockaddr_in 
   return first_client;
 }
 
-struct clt* client_find(struct clt* first_client, int sock){
+/* -------------- Find a client thanks to his socket number -------------- */
+struct clt* client_find_sock(struct clt* first_client, int sock){
   struct clt* found_client=first_client;
   while (found_client!=NULL && found_client->sockfd!=sock){
     found_client=found_client->next;
     printf("find client\n");
+  }
+  return found_client;
+}
+
+/* -------------- Find a client thanks to his pseudo -------------- */
+struct clt* client_find_pseudo(struct clt* first_client, char* pseudo){
+
+  struct clt* found_client=first_client;
+
+  if (strcmp(pseudo, found_client->psd)==0)
+    return found_client;
+
+  while (found_client!=NULL && (strcmp(pseudo, found_client->psd)!=0)){
+    found_client=found_client->next;
   }
   return found_client;
 }
@@ -69,27 +90,35 @@ char* who(struct clt* first_client) {
     strcat(list_pseudo, "Online users are :\n");
 
     struct clt* temp=first_client;
-    int c=0;
 
     while (temp!=NULL){
-     printf("%d\n", c);
      char* pseudo=malloc(sizeof (char) *200);
      sprintf(pseudo, "             - %s\n",temp->psd);
-     printf("psuedo : %s\n",pseudo);
      strcat(list_pseudo, pseudo);
-     printf("list_psuedo : %s\n", list_pseudo);
-
      temp=temp->next;
-      c++;
     }
     return list_pseudo;
   }
 }
 
+/* -------------- Create the list of online users -------------- */
+char* whois(struct clt* first_client, char* pseudo) {
+    struct clt* whois_client=client_find_pseudo(first_client,pseudo);
+
+    if (whois_client==NULL){
+      char* rep="This user is not logged in";
+      return rep;
+    }
+
+    char* client_info=malloc(sizeof (char) *200);
+    sprintf(client_info, "%s connected",whois_client->psd);
+    //sprintf(client_info, "%s connected  since %s with IP address %s and port number %s",whois_client->psd);
+    return client_info;
+}
 
 
 void client_free(struct clt* first_client, int sock){
-  struct clt* removed_client=client_find(first_client,sock);
+  struct clt* removed_client=client_find_sock(first_client,sock);
   struct clt* temp=first_client;
 
   if (first_client==NULL)

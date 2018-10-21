@@ -161,7 +161,11 @@ char* test_cmd(char *buf, struct clt* first_client, int sock){
 
   else if (strcmp("/who", cmd) == 0) {
     printf("Le client veut consulter la liste des clients connectés\n");
-    // envoyer un message cote client pour lui donner l'intégralité des clients connectés
+    if (strlen(msg)!=0)
+      rep = "To have the user list use /who and to have information about one user use /whois <username>\n";
+    else {
+      rep =who(first_client) ;
+    }
   }
   else if(strcmp("/whois", cmd) == 0) {
     // envoyer un message cote client pour lui donner les informations sur le client qu'il demande

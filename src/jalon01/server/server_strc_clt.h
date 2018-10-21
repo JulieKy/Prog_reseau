@@ -22,6 +22,8 @@ struct clt* client_add(struct clt*, int, struct sockaddr_in);
 // Find a client thanks to his sockfd
 struct clt* client_find(struct clt* first_client, int sock);
 
+char* who(struct clt*);
+
 // Remove a client from the list
 void client_free(struct clt*t, int);
 

@@ -24,7 +24,7 @@ struct clt* client_new(int sockfd, struct sockaddr_in saddr_in){
   if (!new_client)
     perror("Creation new client : memory error");
   new_client->sockfd=sockfd;
-  new_client->psd="";
+  new_client->psd="unknown";
 
 //   time_t date_init=time(NULL);
 //   struct tm* date=localtime(&date);
@@ -57,6 +57,36 @@ struct clt* client_find(struct clt* first_client, int sock){
   }
   return found_client;
 }
+
+/* -------------- Create the list of online users -------------- */
+char* who(struct clt* first_client) {
+
+  if (first_client->next==NULL)
+    return "You are the only client\n";
+
+  else {
+    char* list_pseudo=malloc(sizeof (char) *200);
+    strcat(list_pseudo, "Online users are :\n");
+
+    struct clt* temp=first_client;
+    int c=0;
+
+    while (temp!=NULL){
+     printf("%d\n", c);
+     char* pseudo=malloc(sizeof (char) *200);
+     sprintf(pseudo, "             - %s\n",temp->psd);
+     printf("psuedo : %s\n",pseudo);
+     strcat(list_pseudo, pseudo);
+     printf("list_psuedo : %s\n", list_pseudo);
+
+     temp=temp->next;
+      c++;
+    }
+    return list_pseudo;
+  }
+}
+
+
 
 void client_free(struct clt* first_client, int sock){
   struct clt* removed_client=client_find(first_client,sock);

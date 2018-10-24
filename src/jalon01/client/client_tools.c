@@ -87,7 +87,6 @@ char* readline(int sock){
 }
 
 
-
 /* -------------- Send message to the server -------------- */
 void do_write(char* msg, int sock){
   int sent=0, msg_intsize=strlen(msg);

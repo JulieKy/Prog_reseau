@@ -55,11 +55,11 @@ void do_listen(int sock, struct sockaddr_in saddr_in){
 }
 
 /* -------------- Accept connection from client -------------- */
-int do_accept(struct sockaddr_in saddr_in, int sock) {
+int do_accept(struct sockaddr_in* saddr_in, int sock) {
   socklen_t length = sizeof(saddr_in);
   socklen_t* addrlen = &length;
   int new_sock;
-  new_sock=accept(sock, (struct sockaddr*)&saddr_in, addrlen);
+  new_sock=accept(sock, (struct sockaddr*)saddr_in, addrlen);
   if (new_sock < 0){
     perror("accept");
     exit(EXIT_FAILURE);
@@ -85,14 +85,6 @@ int test_nb_users(struct pollfd* fds, int nfds, int sock, int new_sock, struct s
   }
 }
 
-// /* -------------- Ask clients to give their pseudo -------------- */
-// void ask_pseudo(int new_sock){
-//   char* msg_pseudo = malloc(sizeof (char) * MSG_MAXLEN);
-//   msg_pseudo="pseudo";
-//   write(new_sock,msg_pseudo,MSG_MAXLEN);
-//   //memset(new_sock, '\0', MSG_MAXLEN);
-// }
-
 
 /* -------------- Read what the client has to say -------------- */
 char* do_read(int new_sock){
@@ -106,19 +98,9 @@ char* do_read(int new_sock){
 
 /* -------------- We write back to the client -------------- */
 void do_write(char* buf, int new_sock){
-    printf("write : %s\n", buf);
+    printf("[write] : %s\n", buf);
     write(new_sock,buf,MSG_MAXLEN);
 }
-
-// Cleanup socket
-void do_close(int sock_closed, struct clt* first_client){
-  printf("=== Socket %d closed === \n", sock_closed);
-  // Mettre client_free(first_client,sock_closed);
-  fflush(stdout);
-  close(sock_closed);
-  // Supprimer la socket de la structure de tableau fds
-}
-
 
 /* -------------- Test the different queries -------------- */
 char* test_cmd(char *buf, struct clt* first_client, int sock){
@@ -161,11 +143,11 @@ char* test_cmd(char *buf, struct clt* first_client, int sock){
 
   else if (strcmp("/who", cmd) == 0) {
     printf("Le client veut consulter la liste des clients connectés\n");
-    if (strlen(msg)!=0)
-      rep = "To have the user list use /who and to have information about one user use /whois <username>\n";
-    else {
+    // if ((strlen(msg)!=1)||(strlen(msg)!=0)) // A modifier si le pseudo peut être un seul caractere
+    //   rep = "To have the user list use /who and to have information about one user use /whois <username>\n";
+    // else {
       rep =who(first_client) ;
-    }
+    //}
   }
 
   else if(strcmp("/whois", cmd) == 0) {
@@ -181,5 +163,17 @@ char* test_cmd(char *buf, struct clt* first_client, int sock){
     rep=buf;
 
   return rep;
+}
 
+/* -------------- Cleanup socket -------------- */
+void do_close(int sock_closed, struct clt* first_client){
+  printf("=== Socket %d closed === \n", sock_closed);
+  fflush(stdout);
+  close(sock_closed);
+  struct clt* removed_client;
+  removed_client=client_find_sock(first_client,sock_closed);
+  first_client=remove_client(first_client, removed_client);
+  int nb_clt= nbre_client(first_client);
+  printf(">>> Nombre de client connecté au serveur : %d\n",nb_clt);
+  // Supprimer la socket de la structure de tableau fds
 }

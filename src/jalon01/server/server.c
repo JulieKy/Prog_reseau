@@ -7,6 +7,8 @@
 #include <netinet/in.h>
 #include <time.h>
 #include <sys/poll.h>
+#include <arpa/inet.h>
+
 
 #include "server_strc_clt.h"
 #include "server_tools.h"
@@ -30,9 +32,11 @@ int main(int argc, char** argv) {
   // Mise en place de la socket d'écoute
   int sv_port=atoi(argv[1]);
   int sock=do_socket();
-  struct sockaddr_in saddr_in=init_serv_addr(sv_port);
+  struct sockaddr_in saddr_in = init_serv_addr(sv_port);
+
   do_bind(sock, saddr_in);
   do_listen(sock, saddr_in);
+
 
   // Initialisation de la liste de clients
   struct clt* first_client;
@@ -60,17 +64,22 @@ int main(int argc, char** argv) {
 
     // Acceptation de nouveaux clients si première socket en activité
     if(fds[0].revents == POLLIN) {
-      int new_sock=do_accept(saddr_in,sock);
+
+      int new_sock=do_accept(&saddr_in,sock);
       printf(">> Le numéro de socket du nouveau client est : %d\n", new_sock);
       int nfds_test=test_nb_users(fds, nfds, sock, new_sock, saddr_in);
       if (nfds_test!=0)
         nfds=nfds_test;
+
+      // Récupération de l'@IP et du port de chaque client
+      char* IP = inet_ntoa(saddr_in.sin_addr);
+      unsigned short port=ntohs(saddr_in.sin_port);
+
       // Ajout du client à la liste
-      first_client=client_add(first_client, new_sock, saddr_in);
+      first_client=client_add(first_client, new_sock, IP, port);
       int nb_clt= nbre_client(first_client);
       printf(">> Nombre de clients connecté au serveur: %d\n", nb_clt);
-      // Demande le pseudo
-      //ask_pseudo(new_sock);
+
     }
 
 
@@ -84,19 +93,13 @@ int main(int argc, char** argv) {
         // read
         char* buf;
         buf=do_read(fds[i].fd);
-        printf("read : %s\n", buf);
+        printf("[read] : %s\n", buf);
         char* rep = test_cmd(buf, first_client, fds[i].fd);
 
-        //Test quit
+        // Fermeture de la socket
         if(strcmp("/quit\n", buf) == 0) {
           sock_closed=fds[i].fd;
-          printf("=== Socket %d closed ===\n",sock_closed); // NE pas laisser ici, le mettre dans le do_close
-          struct clt* removed_client;
-          removed_client=client_find_sock(first_client,sock_closed);
-          //client_free(first_client,sock_closed);
-          printf("client_free\n");
-          int nb_clt= nbre_client(first_client);
-          printf("Suppression_Taille de la liste : %d\n",nb_clt);
+          do_close(sock_closed, first_client);
           break;
         }
 
@@ -105,8 +108,6 @@ int main(int argc, char** argv) {
       }
     }
   }
-  // Fermeture socket
-  do_close(sock_closed, first_client); // Problème !! Ne va jamais jusque là
 
   return 0;
 }

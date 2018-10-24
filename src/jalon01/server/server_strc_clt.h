@@ -2,10 +2,9 @@
 struct clt {
   int sockfd;
   char* psd;
-  time_t date;
-  //struct tm* date;
-  //int port;
-  //char* IP; 
+  char* date;
+  unsigned short port;
+  char* IP; 
   struct clt* next;
 };
 
@@ -13,12 +12,10 @@ struct clt {
 struct clt* client_list_init();
 
 // Create a new client
-//struct clt* client_new(int, char, char*, int, int);
-struct clt* client_new(int, struct sockaddr_in);
+struct clt* client_new(int, char*,unsigned short);
 
 // Add a client to the list
-//struct clt* client_add(struct clt*, int, char, char*, int, int);
-struct clt* client_add(struct clt*, int, struct sockaddr_in);
+struct clt* client_add(struct clt*, int, char*, unsigned short);
 
 // Find a client thanks to his sockfd
 struct clt* client_find_sock(struct clt*, int sock);
@@ -26,12 +23,15 @@ struct clt* client_find_sock(struct clt*, int sock);
 // Find a client thanks to his pseudo 
 struct clt* client_find_pseudo(struct clt*, char*);
 
+
+// Create the list of online users 
 char* who(struct clt*);
 
+// Create the list of online users 
 char* whois(struct clt*, char*);
 
 // Remove a client from the list
-void client_free(struct clt*t, int);
+struct clt* remove_client(struct clt*, struct clt*);
 
 // Count the number of clients
 int nbre_client(struct clt*);

@@ -11,44 +11,39 @@
 
 #include "server_strc_clt.h"
 
+/* -------------- Create a new list of clients-------------- */
 struct clt* client_list_init() {
   struct clt* list_client= malloc(sizeof(*list_client));
   list_client=NULL;
   return list_client;
 }
 
-
-//struct clt* client_new(int sockfd, char pseudo, char* date, int port, int IP){
-struct clt* client_new(int sockfd, struct sockaddr_in saddr_in){
+/* -------------- Create a new client-------------- */
+struct clt* client_new(int sockfd, char* IP, unsigned short port){
   struct clt* new_client=malloc(sizeof(*new_client));
   if (!new_client)
     perror("Creation new client : memory error");
   new_client->sockfd=sockfd;
   new_client->psd="unknown";
 
-  // time_t date_init=time(NULL);
-  // struct tm* date=localtime(&date);
-  // new_client->date=date;
-
+ // Date et heure
   time_t t;
-  time_t date=time(&t);
+  t=time(NULL);
+  char* date=ctime(&t);
   new_client->date=date;
-  printf("date : %ld\n", date);
 
+  // IP
+  new_client->IP=IP;
 
-  // int port=saddr_in.sin_port;
-  // new_client->port=port;
-  //
-  // char* IP = inet_atoa(saddr_in.sin_addr);
-  // new_client->IP=IP;
-  // new_client->next=NULL;
-   return new_client;
+  // Port
+  new_client->port=port;
+
+  return new_client;
  }
 
-//struct clt* client_add(struct clt* client, int sockfd, char pseudo, char* date, int port, int IP){
-struct clt* client_add(struct clt* first_client, int sockfd, struct sockaddr_in saddr_in){
-  //struct clt* new_client=client_new(sockfd, pseudo, date, port, IP);
-  struct clt* new_client=client_new(sockfd, saddr_in);
+/* -------------- Add a client to the list -------------- */
+struct clt* client_add(struct clt* first_client, int sockfd, char* IP, unsigned short port){
+  struct clt* new_client=client_new(sockfd, IP, port);
   // Ajout en début de liste
   new_client->next=first_client;
   first_client=new_client;
@@ -111,36 +106,39 @@ char* whois(struct clt* first_client, char* pseudo) {
     }
 
     char* client_info=malloc(sizeof (char) *200);
-    sprintf(client_info, "%s connected",whois_client->psd);
-    //sprintf(client_info, "%s connected  since %s with IP address %s and port number %s",whois_client->psd);
+    sprintf(client_info, "%s connected since %s with IP address %s and port %d",whois_client->psd, whois_client->date, whois_client->IP, whois_client->port);
     return client_info;
 }
 
+/* -------------- Remove a client from the list -------------- */
+struct clt* remove_client(struct clt* first_client, struct clt* removed_client){
 
-void client_free(struct clt* first_client, int sock){
-  struct clt* removed_client=client_find_sock(first_client,sock);
-  struct clt* temp=first_client;
-
-  if (first_client==NULL)
-    //return NULL;
-
-  if (first_client==removed_client){
-    printf("suppression 1\n");
-    if (first_client->next==NULL)
-      first_client=NULL;
-    else
-      first_client=temp->next;
-      free(removed_client); // Peut etre marche pas
-    }
-  else{
-    while (temp->next!=removed_client)
-      printf("cherche el à suppr\n");
-      temp=temp->next;
-    temp->next=removed_client->next;
-    free(removed_client); // Peut etre marche pas
+  struct clt* temp = first_client;
+  if (first_client==NULL){
+    return NULL;
   }
+  //Suppression premier element
+  if(temp==removed_client){
+    return temp->next;
+  }
+
+  while(temp->next!=NULL){
+    //Suppression dernier element
+    if ((temp->next)->next==NULL && temp->next==removed_client) {
+      temp->next=NULL;
+      break;
+    }
+    // Suppression element au milieu
+    if(temp->next==removed_client) {
+      temp->next=(temp->next)->next;
+    }
+    temp=temp->next;
+  }
+  free(removed_client);
+  return first_client;
 }
 
+/* -------------- Return the number of connected clients -------------- */
 int nbre_client(struct clt* first_client){
   if (first_client==NULL)
     return 0;
@@ -154,18 +152,3 @@ int nbre_client(struct clt* first_client){
     return c;
   }
 }
-
-
-
-  // // Ajout à la fin
-  // if (client==NULL)
-  //   new_client->next=client;
-  // else {
-  //   struct clt* temp;
-  //   temp=client;
-  //   while(temp->next!=NULL)
-  //     temp=temp->next;
-  //   temp->next=new_client;
-  //   new_client->next=NULL;
-  //   return client;
-  // }

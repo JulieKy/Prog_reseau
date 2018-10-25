@@ -95,11 +95,19 @@ char* do_read(int new_sock){
   return buf;
   }
 
-
 /* -------------- We write back to the client -------------- */
 void do_write(char* buf, int new_sock){
     printf("[write] : %s\n", buf);
     write(new_sock,buf,MSG_MAXLEN);
+}
+
+/* -------------- Write a broadcast message -------------- */
+void do_write_broadcast(int sock, char* msg, struct clt* first_client){
+    printf("[write broadcast] : %s\n", msg);
+    struct clt* temp=first_client;
+    while (temp!=NULL){
+      write(temp->sockfd, msg, MSG_MAXLEN);
+    }
 }
 
 /* -------------- Test the different queries -------------- */
@@ -159,8 +167,14 @@ char* test_cmd(char *buf, struct clt* first_client, int sock){
     }
   }
 
+  else if(strcmp("/msgall", cmd) == 0) {
+    printf(">> Broadcast\n");
+    // write
+    do_write_broadcast(sock, msg, first_client);
+  }
+
   else
-    rep=buf;
+    rep=NULL;
 
   return rep;
 }

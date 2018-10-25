@@ -13,6 +13,9 @@ int test_nb_users(struct pollfd*, int, int, int, struct sockaddr_in);
 
 char* do_read(int);
 
+// Write a broadcast message 
+void do_write_broadcast(int, char*, struct clt*);
+
 void do_write(char*, int);
 
 void do_close(int, struct clt*);

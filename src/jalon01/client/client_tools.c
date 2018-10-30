@@ -81,7 +81,6 @@ void send_first_pseudo(int sock){
 char* readline(int sock){
   char* msg = malloc(sizeof (char) * MSG_MAXLEN);
   memset(msg, '\0', MSG_MAXLEN);
-  printf("[From you] : ");
   fgets(msg,MSG_MAXLEN,stdin);
   return msg;
 }
@@ -100,11 +99,6 @@ int do_read(int sock){
   char* bufc = malloc(sizeof (char) * MSG_MAXLEN);
   bzero(bufc,MSG_MAXLEN);
   read(sock,bufc, MSG_MAXLEN);
-  printf("%s\n",bufc);
-  // if (bufc==NULL){
-  // printf("Pas de msg envoyé\n");
-  //   return 0;
-  // }
   printf("[Server] : %s\n", bufc);
   if (strcmp(bufc,"Server cannot accept incoming connections anymore. Try again")==0){
     return 1;

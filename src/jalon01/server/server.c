@@ -60,7 +60,7 @@ int main(int argc, char** argv) {
   for(;;)
   {
     // Nombre de socket en activité
-    n=poll(fds, nfds, timeout);
+    int n=poll(fds, nfds, timeout);
 
     // Acceptation de nouveaux clients si première socket en activité
     if(fds[0].revents == POLLIN) {
@@ -81,7 +81,6 @@ int main(int argc, char** argv) {
       printf(">> Nombre de clients connecté au serveur: %d\n", nb_clt);
 
     }
-
 
 
     // Read et write sur les sockets en activité (sauf socket d'écoute)

@@ -67,7 +67,6 @@ int main(int argc,char** argv)
       }
 
       if(fds[1].revents == POLLIN) {
-        printf("socket\n");
         // Read a message and chack that there aren't too many users
         int too_clients=do_read(fds[1].fd);
         if (too_clients==1) {

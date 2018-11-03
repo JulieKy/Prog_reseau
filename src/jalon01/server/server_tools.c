@@ -102,11 +102,19 @@ void do_write(char* buf, int new_sock){
 }
 
 /* -------------- Write a broadcast message -------------- */
-void do_write_broadcast(int sock, char* msg, struct clt* first_client){
-    printf("[write broadcast] : %s\n", msg);
+char* do_write_broadcast(int sock, char* msg, struct clt* first_client){
+    // Recovery of the sender's pseudo to send : "[User0]: msg"
+    struct clt* sender=client_find_sock(first_client, sock);
+    char* psd=sender->psd;
+    char* msg_pseudo = malloc(sizeof (char) * MSG_MAXLEN);
+    sprintf(msg_pseudo, "[%s]: %s\n" , psd, msg);
     struct clt* temp=first_client;
+    printf("[write broadcast] : %s\n", msg_pseudo);
     while (temp!=NULL){
-      write(temp->sockfd, msg, MSG_MAXLEN);
+      if (sock!=temp->sockfd) {
+        write(temp->sockfd, msg_pseudo, MSG_MAXLEN);
+      }
+    temp=temp->next;
     }
 }
 
@@ -120,6 +128,7 @@ char* test_cmd(char *buf, struct clt* first_client, int sock){
   char* cmd = malloc(sizeof (char) * MSG_MAXLEN);
   char* msg = malloc(sizeof (char) * MSG_MAXLEN);
   char* rep = malloc(sizeof (char) * MSG_MAXLEN);
+  char* server_rep = malloc(sizeof (char) * MSG_MAXLEN);
 
   sscanf(buf, "%s %s" , cmd, msg);
 
@@ -132,20 +141,22 @@ char* test_cmd(char *buf, struct clt* first_client, int sock){
     client->psd=msg;
     printf(">> Le pseudo du client %d est : %s\n",sock, client->psd);
     char welcome[MSG_MAXLEN] = "Welcome on the chat";
-    sprintf(rep, "%s %s\n" , welcome, client->psd);
+    sprintf(server_rep, "[Server] : %s %s\n" , welcome, client->psd);
   }
 
   else if(strcmp("/nick", cmd) == 0) {
     printf("Le client entre son pseudo\n");
     if (strlen(msg)<2){
       rep ="Your pseudo must be 2 letters long\n";
+      sprintf(server_rep, "[Server] : %s", rep);
     }
     else{
       struct clt* client=client_find_sock(first_client, sock);
       client->psd=msg;
       printf(">> Le nouveau pseudo du client %d est : %s\n",sock, client->psd);
       char a[MSG_MAXLEN] = "Your new pseudo is";
-      sprintf(rep, "%s %s\n" , a, client->psd);
+      sprintf(server_rep, "[Server] : %s %s\n" , a, client->psd);
+
     }
   }
 
@@ -155,28 +166,32 @@ char* test_cmd(char *buf, struct clt* first_client, int sock){
     //   rep = "To have the user list use /who and to have information about one user use /whois <username>\n";
     // else {
       rep =who(first_client) ;
+      sprintf(server_rep, "[Server] : %s", rep);
     //}
   }
 
   else if(strcmp("/whois", cmd) == 0) {
     printf(">> Le client veut consulter les informations d'un utilisateur : /whois <pseudo>\n");
+    char* re = malloc(sizeof (char) * MSG_MAXLEN);
     if (strlen(msg)==0)
       rep = "You have to specify the name of the user\n";
     else {
       rep =whois(first_client, msg);
     }
+    sprintf(server_rep, "[Server] : %s", rep);
   }
 
   else if(strcmp("/msgall", cmd) == 0) {
     printf(">> Broadcast\n");
     // write
     do_write_broadcast(sock, msg, first_client);
+    server_rep=NULL;
   }
 
   else
-    rep=NULL;
+    server_rep=NULL;
 
-  return rep;
+  return server_rep;
 }
 
 /* -------------- Cleanup socket -------------- */

@@ -56,6 +56,7 @@ int main(int argc, char** argv) {
   // fd de la socket à fermer
   int sock_closed;
 
+
   // Acceptation puis read et write tant que la socket n'est pas fermée
   for(;;)
   {

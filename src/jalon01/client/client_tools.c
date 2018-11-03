@@ -99,7 +99,7 @@ int do_read(int sock){
   char* bufc = malloc(sizeof (char) * MSG_MAXLEN);
   bzero(bufc,MSG_MAXLEN);
   read(sock,bufc, MSG_MAXLEN);
-  printf("[Server] : %s\n", bufc);
+  printf("%s\n", bufc);
   if (strcmp(bufc,"Server cannot accept incoming connections anymore. Try again")==0){
     return 1;
   }

@@ -130,7 +130,9 @@ char* test_cmd(char *buf, struct clt* first_client, int sock){
   char* rep = malloc(sizeof (char) * MSG_MAXLEN);
   char* server_rep = malloc(sizeof (char) * MSG_MAXLEN);
 
-  sscanf(buf, "%s %s" , cmd, msg);
+  sscanf(buf, "%s" , cmd);
+  sprintf(msg, "%s", buf+sizeof(cmd));
+  printf("msg=%s\n",msg);
 
   if(strcmp("/quit",cmd)==0){
     printf("recu /quit\n");

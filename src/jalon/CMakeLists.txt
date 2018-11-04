@@ -4,5 +4,5 @@ project(RE216)
 
 
 
-add_subdirectory(jalon)
-
+add_subdirectory(client)
+add_subdirectory(server)

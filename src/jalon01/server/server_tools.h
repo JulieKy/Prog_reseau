@@ -16,6 +16,9 @@ char* do_read(int);
 // Write a broadcast message 
 char* do_write_broadcast(int, char*, struct clt*);
 
+// Write a unicast message
+char* do_write_unicast(int sock, char* msg, struct clt* first_client);
+
 void do_write(char*, int);
 
 void do_close(int, struct clt*);

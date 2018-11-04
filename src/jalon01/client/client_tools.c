@@ -70,7 +70,7 @@ void send_first_pseudo(int sock){
     buf=readline(sock);
     sscanf(buf, "%s %s" , cmd, pseudo);
   }
-  char cmd_pseudo[MSG_MAXLEN]= "first_pseudo";
+  char cmd_pseudo[MSG_MAXLEN]= "psd";
   char* msg_con = malloc(sizeof (char) * MSG_MAXLEN);
   sprintf(msg_con, "%s %s" , cmd_pseudo, pseudo);
   write(sock,msg_con,MSG_MAXLEN);

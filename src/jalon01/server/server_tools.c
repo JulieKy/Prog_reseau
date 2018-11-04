@@ -118,6 +118,25 @@ char* do_write_broadcast(int sock, char* msg, struct clt* first_client){
     }
 }
 
+/* -------------- Write a unicast message -------------- */
+char* do_write_unicast(int sock, char* msg, struct clt* first_client){
+    // Find the receiver's pseudo and the message
+    char* rcver_psd= malloc(sizeof (char) * MSG_MAXLEN);
+    char* message= malloc(sizeof (char) * MSG_MAXLEN);;
+    sscanf(msg, "%s" , rcver_psd);
+    sprintf(message, "%s", msg+sizeof(rcver_psd));
+    printf("msg=%s\n",message);
+    // Find the receiver
+    struct clt* rcver=client_find_pseudo(first_client, rcver_psd);
+    // Recovery of the sender's pseudo to send : "[User0]: msg"
+    struct clt* sender=client_find_sock(first_client, sock);
+    char* psd=sender->psd;
+    char* msg_pseudo = malloc(sizeof (char) * MSG_MAXLEN);
+    sprintf(msg_pseudo, "[%s]: %s\n" , psd, message);
+    //Write to the receiver
+    write(rcver->sockfd, msg_pseudo, MSG_MAXLEN);
+}
+
 /* -------------- Test the different queries -------------- */
 char* test_cmd(char *buf, struct clt* first_client, int sock){
 
@@ -131,14 +150,17 @@ char* test_cmd(char *buf, struct clt* first_client, int sock){
   char* server_rep = malloc(sizeof (char) * MSG_MAXLEN);
 
   sscanf(buf, "%s" , cmd);
-  sprintf(msg, "%s", buf+sizeof(cmd));
+  sprintf(msg, "%s", buf+strlen(cmd)+1);
+
+  printf("cmd=%s\n", cmd);
   printf("msg=%s\n",msg);
+  printf("length msg=%d\n", strlen(msg));
 
   if(strcmp("/quit",cmd)==0){
     printf("recu /quit\n");
   }
 
-  else if(strcmp("first_pseudo",cmd)==0){
+  else if(strcmp("psd",cmd)==0){
     struct clt* client=client_find_sock(first_client, sock);
     client->psd=msg;
     printf(">> Le pseudo du client %d est : %s\n",sock, client->psd);
@@ -185,8 +207,13 @@ char* test_cmd(char *buf, struct clt* first_client, int sock){
 
   else if(strcmp("/msgall", cmd) == 0) {
     printf(">> Broadcast\n");
-    // write
     do_write_broadcast(sock, msg, first_client);
+    server_rep=NULL;
+  }
+
+  else if(strcmp("/msg", cmd) == 0) {
+    printf(">> Unicast\n");
+    do_write_unicast(sock, msg, first_client);
     server_rep=NULL;
   }
 

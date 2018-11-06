@@ -42,16 +42,18 @@ struct channel* channel_add(struct channel* first_channel, char* name){
 
 /* -------------- Find a channel thanks to his name -------------- */
 struct channel* channel_find_name(struct channel* first_channel, char* name){
+  struct channel* temp=first_channel;
 
-  struct channel* found_channel=first_channel;
+  if (strcmp(name, temp->name)==0)
+    return temp;
 
-  if (strcmp(name, found_channel->name)==0)
-    return found_channel;
-
-  while (found_channel!=NULL && (strcmp(name, found_channel->name)!=0)){
-    found_channel=found_channel->next;
+  while (temp!=NULL){
+    if (strcmp(name, temp->name)==0)
+      return temp;
+    temp=temp->next;
   }
-  return found_channel;
+  printf("Rien trouvé\n");
+  return NULL;
 }
 
 

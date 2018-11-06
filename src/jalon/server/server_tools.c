@@ -241,9 +241,20 @@ struct channel* treat_writeback(char *buf, struct clt* first_client, int sock, s
 
   // create channel ------------------------------------------------
   else if(strcmp("/create", cmd) == 0) {
+    if ((list_channel!=NULL) && (channel_find_name(list_channel,msg)!=NULL))
+      sprintf(server_rep, "[Server] Channel %s already exist", msg);
+    else {
+      list_channel=channel_add(list_channel, msg);
+      printf(">> Number of channels : %d\n", nbre_channel(list_channel));
+      sprintf(server_rep, "[Server] You have created channel %s", list_channel->name);
+    }
+  }
+
+  // join channel ------------------------------------------------
+  else if(strcmp("/join", cmd) == 0) {
     list_channel=channel_add(list_channel, msg);
     printf(">> Number of channels : %d\n", nbre_channel(list_channel));
-    sprintf(server_rep, "[Server] You have create the channel %s", list_channel->name);
+    sprintf(server_rep, "[Server] : You have created channel %s", list_channel->name);
   }
 
   else

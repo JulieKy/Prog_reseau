@@ -104,8 +104,8 @@ char* who(struct clt* first_client) {
 /* -------------- Create the list of online users -------------- */
 char* whois(struct clt* first_client, char* pseudo) {
     struct clt* whois_client=client_find_pseudo(first_client,pseudo);
-    printf("length client->psd=%d\n", strlen(first_client->psd));
-    printf("length pseudo (entree whois)=%d\n\n", strlen(pseudo));
+    printf("length client->psd=%ld\n", strlen(first_client->psd));
+    printf("length pseudo (entree whois)=%ld\n\n", strlen(pseudo));
     printf("pseudo=%s\n", first_client->psd);
     printf("msg=%s", pseudo);
     printf("a\n");

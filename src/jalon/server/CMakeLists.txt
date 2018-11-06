@@ -10,6 +10,8 @@ SET(SRC_SERVER
   server_tools.c
 	user_tools.h
 	user_tools.c
+	channel_tools.h
+	channel_tools.c
     )
 
 

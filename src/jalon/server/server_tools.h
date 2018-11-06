@@ -1,4 +1,3 @@
-
 int do_socket();
 
 struct sockaddr_in init_serv_addr(int);
@@ -13,7 +12,7 @@ int test_nb_users(struct pollfd*, int, int, int, struct sockaddr_in);
 
 char* do_read(int);
 
-// Write a broadcast message 
+// Write a broadcast message
 void do_write_broadcast(int, char*, struct clt*);
 
 // Write a unicast message
@@ -24,4 +23,3 @@ void do_write(char*, int);
 void do_close(int, struct clt*);
 
 char* test_cmd(char*, struct clt*, int);
-

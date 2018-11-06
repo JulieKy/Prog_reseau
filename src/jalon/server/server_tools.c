@@ -102,7 +102,7 @@ void do_write(char* buf, int new_sock){
 }
 
 /* -------------- Write a broadcast message -------------- */
-char* do_write_broadcast(int sock, char* msg, struct clt* first_client){
+void do_write_broadcast(int sock, char* msg, struct clt* first_client){
     // Recovery of the sender's pseudo to send : "[User0]: msg"
     struct clt* sender=client_find_sock(first_client, sock);
     char* psd=sender->psd;
@@ -122,19 +122,31 @@ char* do_write_broadcast(int sock, char* msg, struct clt* first_client){
 char* do_write_unicast(int sock, char* msg, struct clt* first_client){
     // Find the receiver's pseudo and the message
     char* rcver_psd= malloc(sizeof (char) * MSG_MAXLEN);
-    char* message= malloc(sizeof (char) * MSG_MAXLEN);;
+    char* message= malloc(sizeof (char) * MSG_MAXLEN);
+    char* rep= malloc(sizeof (char) * MSG_MAXLEN);
     sscanf(msg, "%s" , rcver_psd);
     sprintf(message, "%s", msg+sizeof(rcver_psd));
     printf("msg=%s\n",message);
     // Find the receiver
     struct clt* rcver=client_find_pseudo(first_client, rcver_psd);
-    // Recovery of the sender's pseudo to send : "[User0]: msg"
-    struct clt* sender=client_find_sock(first_client, sock);
-    char* psd=sender->psd;
-    char* msg_pseudo = malloc(sizeof (char) * MSG_MAXLEN);
-    sprintf(msg_pseudo, "[%s]: %s\n" , psd, message);
-    //Write to the receiver
-    write(rcver->sockfd, msg_pseudo, MSG_MAXLEN);
+
+    if (rcver==NULL){
+      rep = "This user doesn't exist.";
+      printf("pas ce pseudo, rep =%s\n", rep);
+    }
+
+    else {
+      rep=NULL;
+      // Recovery of the sender's pseudo to send : "[User0]: msg"
+      struct clt* sender=client_find_sock(first_client, sock);
+      char* psd=sender->psd;
+      char* msg_pseudo = malloc(sizeof (char) * MSG_MAXLEN);
+      sprintf(msg_pseudo, "[%s]: %s\n" , psd, message);
+      //Write to the receiver
+      write(rcver->sockfd, msg_pseudo, MSG_MAXLEN);
+    }
+
+    return rep;
 }
 
 /* -------------- Test the different queries -------------- */
@@ -149,12 +161,14 @@ char* test_cmd(char *buf, struct clt* first_client, int sock){
   char* rep = malloc(sizeof (char) * MSG_MAXLEN);
   char* server_rep = malloc(sizeof (char) * MSG_MAXLEN);
 
-  sscanf(buf, "%s" , cmd);
-  sprintf(msg, "%s", buf+strlen(cmd)+1);
+  sscanf(buf, "%s %s" , cmd, msg);
+  //sscanf(buf, "%s" , cmd);
+  //sprintf(msg, "%s", buf+strlen(cmd)+1);
+  //strcpy(msg, buf+strlen(cmd)+1);
 
-  printf("cmd=%s\n", cmd);
-  printf("msg=%s\n",msg);
-  printf("length msg=%d\n", strlen(msg));
+  // printf("cmd=%s\n", cmd);
+  // printf("msg=%s\n",msg);
+  // printf("length msg=%d\n", strlen(msg));
 
   if(strcmp("/quit",cmd)==0){
     printf("recu /quit\n");
@@ -163,6 +177,7 @@ char* test_cmd(char *buf, struct clt* first_client, int sock){
   else if(strcmp("psd",cmd)==0){
     struct clt* client=client_find_sock(first_client, sock);
     client->psd=msg;
+    //strcpy(client->psd,msg);
     printf(">> Le pseudo du client %d est : %s\n",sock, client->psd);
     char welcome[MSG_MAXLEN] = "Welcome on the chat";
     sprintf(server_rep, "[Server] : %s %s\n" , welcome, client->psd);
@@ -177,10 +192,10 @@ char* test_cmd(char *buf, struct clt* first_client, int sock){
     else{
       struct clt* client=client_find_sock(first_client, sock);
       client->psd=msg;
+      //strcpy(client->psd,msg);
       printf(">> Le nouveau pseudo du client %d est : %s\n",sock, client->psd);
       char a[MSG_MAXLEN] = "Your new pseudo is";
       sprintf(server_rep, "[Server] : %s %s\n" , a, client->psd);
-
     }
   }
 
@@ -213,8 +228,7 @@ char* test_cmd(char *buf, struct clt* first_client, int sock){
 
   else if(strcmp("/msg", cmd) == 0) {
     printf(">> Unicast\n");
-    do_write_unicast(sock, msg, first_client);
-    server_rep=NULL;
+    server_rep=do_write_unicast(sock, msg, first_client);
   }
 
   else

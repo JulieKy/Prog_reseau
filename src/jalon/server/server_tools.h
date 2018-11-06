@@ -14,7 +14,7 @@ int test_nb_users(struct pollfd*, int, int, int, struct sockaddr_in);
 char* do_read(int);
 
 // Write a broadcast message 
-char* do_write_broadcast(int, char*, struct clt*);
+void do_write_broadcast(int, char*, struct clt*);
 
 // Write a unicast message
 char* do_write_unicast(int sock, char* msg, struct clt* first_client);

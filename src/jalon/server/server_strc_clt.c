@@ -11,6 +11,8 @@
 
 #include "server_strc_clt.h"
 
+//#define MSG_MAXLEN 200
+
 /* -------------- Create a new list of clients-------------- */
 struct clt* client_list_init() {
   struct clt* list_client= malloc(sizeof(*list_client));
@@ -24,6 +26,9 @@ struct clt* client_new(int sockfd, char* IP, unsigned short port){
   if (!new_client)
     perror("Creation new client : memory error");
   new_client->sockfd=sockfd;
+
+  // Pseudo
+  //new_client->psd= malloc(sizeof (char) * MSG_MAXLEN);
   new_client->psd="unknown";
 
  // Date et heure

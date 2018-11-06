@@ -59,16 +59,18 @@ void send_first_pseudo(int sock){
 
   char cmd[MSG_MAXLEN];
   char pseudo[MSG_MAXLEN];
+  //char psd[MSG_MAXLEN];
 
-  printf("Please login with /nick <yourpseudo>. Your pseudo must be more than one letter.\n");
+  printf(">> Please login with /nick <yourpseudo>.\n");
   buf=readline(sock);
   sscanf(buf, "%s %s" , cmd, pseudo);
   //send_pseudo(cmd, pseudo, sock);
 
   while ((strcmp("/nick", cmd) != 0) || (strlen(pseudo)<2)){
-    printf("[Server] : Please logon with /nick <yourpseudo>. Your pseudo must be 2 letters long\n\n");
+    printf("[Server] : Please logon with /nick <yourpseudo>. Pseudo size: more than 1 letter/\n\n");
     buf=readline(sock);
     sscanf(buf, "%s %s" , cmd, pseudo);
+    //sprintf(psd, "%s %s\n" , cmd, pseudo);
   }
   char cmd_pseudo[MSG_MAXLEN]= "psd";
   char* msg_con = malloc(sizeof (char) * MSG_MAXLEN);

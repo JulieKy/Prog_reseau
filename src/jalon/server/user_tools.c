@@ -55,6 +55,12 @@ struct clt* client_add(struct clt* first_client, int sockfd, char* IP, unsigned 
   return first_client;
 }
 
+/* -------------- Add a struct client to the list -------------- */
+struct clt* client_add_2(struct clt* first_client, struct clt* client){
+  client->next=first_client;
+  return client;
+}
+
 /* -------------- Find a client thanks to his socket number -------------- */
 struct clt* client_find_sock(struct clt* first_client, int sock){
   struct clt* found_client=first_client;

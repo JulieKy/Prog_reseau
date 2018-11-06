@@ -242,19 +242,27 @@ struct channel* treat_writeback(char *buf, struct clt* first_client, int sock, s
   // create channel ------------------------------------------------
   else if(strcmp("/create", cmd) == 0) {
     if ((list_channel!=NULL) && (channel_find_name(list_channel,msg)!=NULL))
-      sprintf(server_rep, "[Server] Channel %s already exist", msg);
+      sprintf(server_rep, "[Server]: Channel %s already exists", msg);
     else {
       list_channel=channel_add(list_channel, msg);
       printf(">> Number of channels : %d\n", nbre_channel(list_channel));
-      sprintf(server_rep, "[Server] You have created channel %s", list_channel->name);
+      sprintf(server_rep, "[Server]: You have created channel %s", list_channel->name);
     }
   }
 
   // join channel ------------------------------------------------
   else if(strcmp("/join", cmd) == 0) {
-    list_channel=channel_add(list_channel, msg);
-    printf(">> Number of channels : %d\n", nbre_channel(list_channel));
-    sprintf(server_rep, "[Server] : You have created channel %s", list_channel->name);
+    if ((list_channel==NULL) || (channel_find_name(list_channel,msg)!=NULL))
+      sprintf(server_rep, "[Server]: Channel %s doesn't exist", msg);
+    else {
+      struct channel* channel_joined = channel_find_name(list_channel,msg);
+      struct clt* first_client= channel_joined->client;
+      struct clt* client= client_find_sock(first_client, sock);
+      first_client=client_add_2(first_client, client);
+      channel_joined->client=first_client;
+      printf(">> Client %s add to channel %s\n", client->psd, channel_joined->name);
+      sprintf(server_rep, "[%s]> You have joined %s", channel_joined->name, channel_joined->name);
+    }
   }
 
   else

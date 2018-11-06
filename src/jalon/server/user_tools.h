@@ -4,7 +4,7 @@ struct clt {
   char* psd;
   char* date;
   unsigned short port;
-  char* IP; 
+  char* IP;
   struct clt* next;
 };
 
@@ -17,17 +17,20 @@ struct clt* client_new(int, char*,unsigned short);
 // Add a client to the list
 struct clt* client_add(struct clt*, int, char*, unsigned short);
 
+// Add a struct client to the list
+struct clt* client_add_2(struct clt* first_client, struct clt* client);
+
 // Find a client thanks to his sockfd
 struct clt* client_find_sock(struct clt*, int sock);
 
-// Find a client thanks to his pseudo 
+// Find a client thanks to his pseudo
 struct clt* client_find_pseudo(struct clt*, char*);
 
 
-// Create the list of online users 
+// Create the list of online users
 char* who(struct clt*);
 
-// Create the list of online users 
+// Create the list of online users
 char* whois(struct clt*, char*);
 
 // Remove a client from the list

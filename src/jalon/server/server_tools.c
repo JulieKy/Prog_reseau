@@ -8,7 +8,7 @@
 #include <time.h>
 #include <sys/poll.h>
 
-#include "server_strc_clt.h"
+#include "user_tools.h"
 #include "server_tools.h"
 
 #define MSG_MAXLEN 200

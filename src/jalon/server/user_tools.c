@@ -9,7 +9,7 @@
 #include <arpa/inet.h>
 #include <time.h>
 
-#include "server_strc_clt.h"
+#include "user_tools.h"
 
 //#define MSG_MAXLEN 200
 

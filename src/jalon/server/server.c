@@ -10,7 +10,7 @@
 #include <arpa/inet.h>
 
 
-#include "server_strc_clt.h"
+#include "user_tools.h"
 #include "server_tools.h"
 
 void error(const char *msg)

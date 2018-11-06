@@ -7,12 +7,10 @@ SET(SRC_SERVER
 	server.c
 	${structure_client_files}
 	server_tools.h
-    server_tools.c
-	server_strc_clt.h
-	server_strc_clt.c
+  server_tools.c
+	user_tools.h
+	user_tools.c
     )
 
 
 add_executable(RE216_JALON_SERVER  ${SRC_SERVER})
-
-

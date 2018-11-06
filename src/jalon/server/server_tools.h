@@ -22,4 +22,5 @@ void do_write(char*, int);
 
 void do_close(int, struct clt*);
 
-char* test_cmd(char*, struct clt*, int);
+/* -------------- Test the different queries -------------- */
+struct channel* treat_writeback(char *buf, struct clt* first_client, int sock, struct channel* first_channel);

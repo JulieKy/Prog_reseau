@@ -10,7 +10,7 @@
 #include <arpa/inet.h>
 
 
-#include "user_tools.h"
+#include "channel_tools.h"
 #include "server_tools.h"
 
 void error(const char *msg)
@@ -41,6 +41,10 @@ int main(int argc, char** argv) {
   // Initialisation de la liste de clients
   struct clt* first_client;
   first_client=client_list_init();
+
+  // Initialisation de la liste de channels
+  struct channel* list_channel;
+  list_channel=channel_list_init();
 
   // Definition du tableau de structures pollfd
   struct pollfd fds[20];
@@ -93,7 +97,7 @@ int main(int argc, char** argv) {
         char* buf;
         buf=do_read(fds[i].fd);
         printf("[read] : %s\n", buf);
-        char* rep = test_cmd(buf, first_client, fds[i].fd);
+        list_channel= treat_writeback(buf, first_client, fds[i].fd, list_channel);
 
         // Fermeture de la socket
         if(strcmp("/quit\n", buf) == 0) {
@@ -101,9 +105,6 @@ int main(int argc, char** argv) {
           do_close(sock_closed, first_client);
           break;
         }
-
-        // write
-        do_write(rep, fds[i].fd);
       }
     }
   }

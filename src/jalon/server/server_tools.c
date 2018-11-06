@@ -8,7 +8,7 @@
 #include <time.h>
 #include <sys/poll.h>
 
-#include "user_tools.h"
+#include "channel_tools.h"
 #include "server_tools.h"
 
 #define MSG_MAXLEN 200
@@ -85,7 +85,6 @@ int test_nb_users(struct pollfd* fds, int nfds, int sock, int new_sock, struct s
   }
 }
 
-
 /* -------------- Read what the client has to say -------------- */
 char* do_read(int new_sock){
   char* buf = malloc(sizeof (char) * MSG_MAXLEN);
@@ -124,9 +123,11 @@ char* do_write_unicast(int sock, char* msg, struct clt* first_client){
     char* rcver_psd= malloc(sizeof (char) * MSG_MAXLEN);
     char* message= malloc(sizeof (char) * MSG_MAXLEN);
     char* rep= malloc(sizeof (char) * MSG_MAXLEN);
+
     sscanf(msg, "%s" , rcver_psd);
     sprintf(message, "%s", msg+sizeof(rcver_psd));
     printf("msg=%s\n",message);
+
     // Find the receiver
     struct clt* rcver=client_find_pseudo(first_client, rcver_psd);
 
@@ -137,11 +138,13 @@ char* do_write_unicast(int sock, char* msg, struct clt* first_client){
 
     else {
       rep=NULL;
+
       // Recovery of the sender's pseudo to send : "[User0]: msg"
       struct clt* sender=client_find_sock(first_client, sock);
       char* psd=sender->psd;
       char* msg_pseudo = malloc(sizeof (char) * MSG_MAXLEN);
       sprintf(msg_pseudo, "[%s]: %s\n" , psd, message);
+
       //Write to the receiver
       write(rcver->sockfd, msg_pseudo, MSG_MAXLEN);
     }
@@ -150,11 +153,9 @@ char* do_write_unicast(int sock, char* msg, struct clt* first_client){
 }
 
 /* -------------- Test the different queries -------------- */
-char* test_cmd(char *buf, struct clt* first_client, int sock){
+struct channel* treat_writeback(char *buf, struct clt* first_client, int sock, struct channel* first_channel) {
 
-  // test_cmd is 1 if a query is sent by the client, 0 otherwise.
-  int test_cmd;
-  test_cmd=1;
+  struct channel* list_channel= first_channel;
 
   char* cmd = malloc(sizeof (char) * MSG_MAXLEN);
   char* msg = malloc(sizeof (char) * MSG_MAXLEN);
@@ -170,10 +171,12 @@ char* test_cmd(char *buf, struct clt* first_client, int sock){
   // printf("msg=%s\n",msg);
   // printf("length msg=%d\n", strlen(msg));
 
+  // quit --------------------------------------------------------------
   if(strcmp("/quit",cmd)==0){
     printf("recu /quit\n");
   }
 
+  // first pseudo ------------------------------------------------------
   else if(strcmp("psd",cmd)==0){
     struct clt* client=client_find_sock(first_client, sock);
     client->psd=msg;
@@ -183,6 +186,7 @@ char* test_cmd(char *buf, struct clt* first_client, int sock){
     sprintf(server_rep, "[Server] : %s %s\n" , welcome, client->psd);
   }
 
+    // nick ------------------------------------------------------------
   else if(strcmp("/nick", cmd) == 0) {
     printf("Le client entre son pseudo\n");
     if (strlen(msg)<2){
@@ -199,6 +203,7 @@ char* test_cmd(char *buf, struct clt* first_client, int sock){
     }
   }
 
+    // who -------------------------------------------------------------
   else if (strcmp("/who", cmd) == 0) {
     printf("Le client veut consulter la liste des clients connectés\n");
     // if ((strlen(msg)!=1)||(strlen(msg)!=0)) // A modifier si le pseudo peut être un seul caractere
@@ -209,6 +214,7 @@ char* test_cmd(char *buf, struct clt* first_client, int sock){
     //}
   }
 
+    // whois ---------------------------------------------------------
   else if(strcmp("/whois", cmd) == 0) {
     printf(">> Le client veut consulter les informations d'un utilisateur : /whois <pseudo>\n");
     char* re = malloc(sizeof (char) * MSG_MAXLEN);
@@ -220,22 +226,34 @@ char* test_cmd(char *buf, struct clt* first_client, int sock){
     sprintf(server_rep, "[Server] : %s", rep);
   }
 
+    // msgall ------------------------------------------------------
   else if(strcmp("/msgall", cmd) == 0) {
     printf(">> Broadcast\n");
     do_write_broadcast(sock, msg, first_client);
     server_rep=NULL;
   }
 
+    // msg ---------------------------------------------------------
   else if(strcmp("/msg", cmd) == 0) {
     printf(">> Unicast\n");
     server_rep=do_write_unicast(sock, msg, first_client);
   }
 
+  // create channel ------------------------------------------------
+  else if(strcmp("/create", cmd) == 0) {
+    list_channel=channel_add(list_channel, msg);
+    printf(">> Number of channels : %d\n", nbre_channel(list_channel));
+    sprintf(server_rep, "[Server] You have create the channel %s", list_channel->name);
+  }
+
   else
     server_rep=NULL;
 
-  return server_rep;
+  do_write(server_rep, sock);
+
+  return list_channel;
 }
+
 
 /* -------------- Cleanup socket -------------- */
 void do_close(int sock_closed, struct clt* first_client){

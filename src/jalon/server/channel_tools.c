@@ -23,8 +23,7 @@ struct channel* channel_list_init() {
 struct channel* channel_new(char* name){
   struct channel* new_channel=malloc(sizeof(*new_channel));
   new_channel->name=name;
-  struct clt* list_client = client_list_init();
-  new_channel->client= list_client;
+  new_channel->nb_members=0;
   return new_channel;
 }
 
@@ -42,6 +41,10 @@ struct channel* channel_add(struct channel* first_channel, char* name){
 
 /* -------------- Find a channel thanks to his name -------------- */
 struct channel* channel_find_name(struct channel* first_channel, char* name){
+  if (first_channel==NULL){
+    return NULL;
+  }
+
   struct channel* temp=first_channel;
 
   if (strcmp(name, temp->name)==0)
@@ -52,7 +55,6 @@ struct channel* channel_find_name(struct channel* first_channel, char* name){
       return temp;
     temp=temp->next;
   }
-  printf("Rien trouvé\n");
   return NULL;
 }
 

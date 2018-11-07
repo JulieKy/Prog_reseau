@@ -44,7 +44,7 @@ struct clt* client_new(int sockfd, char* IP, unsigned short port){
   new_client->port=port;
 
   // channel
-  char* channel=NULL;
+  new_client->channel="Server";
 
   return new_client;
  }
@@ -58,17 +58,6 @@ struct clt* client_add(struct clt* first_client, int sockfd, char* IP, unsigned 
   return first_client;
 }
 
-/* -------------- Add a struct client to the list -------------- */
-struct clt* client_add_2(struct clt* first_client, struct clt* client){
-  printf("wwwwww\n");
-  client->next=NULL;
-  printf("zzzzz\n");
-  client->next=first_client;
-  printf("yyyyyyy\n");
-  first_client=client;
-  printf("qqqqqqq\n");
-  return first_client;
-}
 
 /* -------------- Find a client thanks to his socket number -------------- */
 struct clt* client_find_sock(struct clt* first_client, int sock){

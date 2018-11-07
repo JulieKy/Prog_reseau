@@ -106,14 +106,7 @@ void do_write_broadcast(int sock, char* msg, struct clt* first_client){
     struct clt* sender=client_find_sock(first_client, sock);
     //struct channel* channel=
 
-    if (channel_test==0){
-      char* name=sender->psd;
-    }
-    else {
-
-      char* name=channel->name;
-    }
-
+    char* name=sender->psd;
     char* msg_pseudo = malloc(sizeof (char) * MSG_MAXLEN);
     sprintf(msg_pseudo, "[%s]: %s\n" , name, msg);
     struct clt* temp=first_client;
@@ -166,29 +159,21 @@ char* do_write_unicast(int sock, char* msg, struct clt* first_client){
 struct channel* treat_writeback(char *buf, struct clt* first_client, int sock, struct channel* first_channel) {
 
   struct channel* list_channel= first_channel;
+  struct clt* client=client_find_sock(first_client, sock);
+  struct channel* channel=channel_find_name(list_channel, client->channel);
 
+  char* sender = malloc(sizeof (char) * MSG_MAXLEN);
+  strcpy(sender, client->channel);
   char* cmd = malloc(sizeof (char) * MSG_MAXLEN);
   char* msg = malloc(sizeof (char) * MSG_MAXLEN);
   char* rep = malloc(sizeof (char) * MSG_MAXLEN);
   char* server_rep = malloc(sizeof (char) * MSG_MAXLEN);
 
   sscanf(buf, "%s %s" , cmd, msg);
-  //sscanf(buf, "%s" , cmd);
-  //sprintf(msg, "%s", buf+strlen(cmd)+1);
-  //strcpy(msg, buf+strlen(cmd)+1);
 
-  // printf("cmd=%s\n", cmd);
-  // printf("msg=%s\n",msg);
-  // printf("length msg=%d\n", strlen(msg));
-
-  // quit --------------------------------------------------------------
-  if(strcmp("/quit",cmd)==0){
-    printf("recu /quit\n");
-  }
 
   // first pseudo ------------------------------------------------------
-  else if(strcmp("psd",cmd)==0){
-    struct clt* client=client_find_sock(first_client, sock);
+  if(strcmp("psd",cmd)==0){
     client->psd=msg;
     //strcpy(client->psd,msg);
     printf(">> Le pseudo du client %d est : %s\n",sock, client->psd);
@@ -196,43 +181,35 @@ struct channel* treat_writeback(char *buf, struct clt* first_client, int sock, s
     sprintf(server_rep, "[Server] : %s %s\n" , welcome, client->psd);
   }
 
-    // nick ------------------------------------------------------------
+  // nick ------------------------------------------------------------
   else if(strcmp("/nick", cmd) == 0) {
-    printf("Le client entre son pseudo\n");
     if (strlen(msg)<2){
       rep ="Your pseudo must be 2 letters long\n";
-      sprintf(server_rep, "[Server] : %s", rep);
+      sprintf(server_rep, "[%s]> %s", sender, rep);
     }
     else{
-      struct clt* client=client_find_sock(first_client, sock);
       client->psd=msg;
       //strcpy(client->psd,msg);
       printf(">> Le nouveau pseudo du client %d est : %s\n",sock, client->psd);
-      char a[MSG_MAXLEN] = "Your new pseudo is";
-      sprintf(server_rep, "[Server] : %s %s\n" , a, client->psd);
+      rep = "Your new pseudo is";
+      sprintf(server_rep, "[Server] : %s %s\n" , rep, client->psd);
     }
   }
 
-    // who -------------------------------------------------------------
+  // who -------------------------------------------------------------
   else if (strcmp("/who", cmd) == 0) {
-    printf("Le client veut consulter la liste des clients connectés\n");
-    // if ((strlen(msg)!=1)||(strlen(msg)!=0)) // A modifier si le pseudo peut être un seul caractere
-    //   rep = "To have the user list use /who and to have information about one user use /whois <username>\n";
-    // else {
       rep =who(first_client) ;
-      sprintf(server_rep, "[Server] : %s", rep);
-    //}
+      sprintf(server_rep, "[%s]> %s",sender, rep);
   }
 
-    // whois ---------------------------------------------------------
+  // whois ---------------------------------------------------------
   else if(strcmp("/whois", cmd) == 0) {
-    printf(">> Le client veut consulter les informations d'un utilisateur : /whois <pseudo>\n");
     if (strlen(msg)==0)
       rep = "You have to specify the name of the user\n";
     else {
       rep =whois(first_client, msg);
     }
-    sprintf(server_rep, "[Server] : %s", rep);
+    sprintf(server_rep, "[%s]> %s", sender, rep);
   }
 
     // msgall ------------------------------------------------------
@@ -250,131 +227,69 @@ struct channel* treat_writeback(char *buf, struct clt* first_client, int sock, s
 
   // create channel ------------------------------------------------
   else if(strcmp("/create", cmd) == 0) {
-    if ((list_channel!=NULL) && (channel_find_name(list_channel,msg)!=NULL))
-      sprintf(server_rep, "[Server]: Channel %s already exists", msg);
+    if (strcmp(client->channel, "Server")==0){
+      if ((list_channel!=NULL) && (channel_find_name(list_channel,msg)!=NULL))
+        sprintf(server_rep, "[Server]: Channel %s already exists", msg);
+      else {
+        list_channel=channel_add(list_channel, msg);
+        printf(">> Number of channels : %d\n", nbre_channel(list_channel));
+        sprintf(server_rep, "[Serveur]: You have created channel %s", list_channel->name);
+      }
+    }
     else {
-      list_channel=channel_add(list_channel, msg);
-      printf(">> Number of channels : %d\n", nbre_channel(list_channel));
-      sprintf(server_rep, "[Server]: You have created channel %s", list_channel->name);
+    sprintf(server_rep, "[%s]> You need to quit the channel", sender);
     }
   }
 
   // join channel ------------------------------------------------
   else if(strcmp("/join", cmd) == 0) {
-    if ((list_channel==NULL) || (channel_find_name(list_channel,msg)==NULL))
-      sprintf(server_rep, "[Server]: Channel %s doesn't exist", msg);
+    printf("message : %s\n",msg );
+    if (strcmp(client->channel, "Server")==0){
+      if (channel_find_name(list_channel,msg)==NULL){
+        printf("coucou\n" );
+        sprintf(server_rep, "[Server]: Channel %s doesn't exist", msg);
+      }
+      else {
+        channel=channel_find_name(list_channel,msg);
+        client->channel=list_channel->name;
+        list_channel->nb_members=list_channel->nb_members+1;
+        sprintf(server_rep, "[%s]> You have joined channel %s\n", channel->name, channel->name);
+        printf("%d clients in channel %s\n", channel->nb_members, channel->name);
+      }
+    }
     else {
-      struct channel* channel_joined = channel_find_name(list_channel,msg);
-      printf("aaaa\n");
-      struct clt first_client= *channel_joined->client;
-      printf("bbbbb\n");
-      struct clt* client= client_find_sock(first_client, sock);
-      printf("ccccc\n");
-      struct clt* f_client=client_add_2(first_client, client);
-      printf("dddddd\n");
-      channel_joined->client=first_client;
-      printf("eeeee\n");
-      printf(">> Client %s add to channel %s\n", client->psd, channel_joined->name);
-      sprintf(server_rep, "[%s]> You have joined %s", channel_joined->name, channel_joined->name);
-      printf("fffff\n");
+      sprintf(server_rep, "[%s]> You need to quit the channel", sender);
     }
   }
+
+    // quit --------------------------------------------------------------
+    else if(strcmp("/quit",cmd)==0){
+      if(strcmp(client->channel, "Server")!=0) {
+        sprintf(server_rep, "[Server]> Channel %s quited\n", client->channel);
+        struct channel* channel=channel_find_name(list_channel, client->channel);
+        channel->nb_members=channel->nb_members-1;
+        if (channel->nb_members==0){
+          list_channel=remove_channel(list_channel, channel);
+        }
+        client->channel="Server";
+        server_rep=NULL;
+      }
+      else {
+        printf("==== Close socket ==== \n"); // Marche pas
+      }
+    }
 
   else
     server_rep=NULL;
 
   do_write(server_rep, sock);
+  // Write multicast
+  //do_write_multicast(sock, cmd, channel->client);  // Attention juste premier mot
 
   return list_channel;
 }
 
 
-/* -------------- Test the different queries when client isn't in a channel -------------- */
-struct channel* treat_writeback_channel(char *buf, struct clt* first_client, int sock, struct channel* first_channel) {
-  struct channel* list_channel= first_channel;
-
-  char* cmd = malloc(sizeof (char) * MSG_MAXLEN);
-  char* msg = malloc(sizeof (char) * MSG_MAXLEN);
-  char* rep = malloc(sizeof (char) * MSG_MAXLEN);
-  char* server_rep = malloc(sizeof (char) * MSG_MAXLEN);
-
-  sscanf(buf, "%s %s" , cmd, msg);
-
-  struct clt* client=client_find_sock(first_client, sock);
-  struct channel* channel=channel_find_name(first_channel, client->psd);
-
-  // quit --------------------------------------------------------------
-  if(strcmp("/quit",cmd)==0){
-    sprintf(server_rep, "Channel %s quitted\n", client->channel);
-    client->channel=NULL;
-    remove_client(first_client, clients);
-  }
-
-  // nick ------------------------------------------------------------
-  else if(strcmp("/nick", cmd) == 0) {
-    printf("Le client entre son pseudo\n");
-    if (strlen(msg)<2){
-      rep ="Your pseudo must be 2 letters long\n";
-      sprintf(server_rep, "[%s]> %s", channel->name, rep);
-    }
-    else{
-      client->psd=msg;
-      //strcpy(client->psd,msg);
-      // A COMPLETER pour mettre aussi à jour pseudo dans channel
-      printf(">> Le nouveau pseudo du client %d est : %s\n",sock, client->psd);
-      sprintf(server_rep, "[%s]> Your pseudo is %s\n" , channel->name, client->psd);
-    }
-  }
-
-    // who -------------------------------------------------------------
-  else if (strcmp("/who", cmd) == 0) {
-    printf("Le client veut consulter la liste des clients connectés\n");
-    rep =who(first_client) ;
-    sprintf(server_rep, "[%s]> %s",channel->name, rep);
-
-  }
-
-    // whois ---------------------------------------------------------
-  else if(strcmp("/whois", cmd) == 0) {
-    printf(">> Le client veut consulter les informations d'un utilisateur : /whois <pseudo>\n");
-    if (strlen(msg)==0)
-      rep = "You have to specify the name of the user\n";
-    else {
-      rep =whois(first_client, msg);
-    }
-    sprintf(server_rep, "[%s]> %s", channel->name, rep);
-  }
-
-    // msgall ------------------------------------------------------
-  else if(strcmp("/msgall", cmd) == 0) {
-    printf(">> Broadcast\n");
-    do_write_broadcast(sock, msg, first_client);
-    server_rep=NULL;
-  }
-
-    // msg ---------------------------------------------------------
-  else if(strcmp("/msg", cmd) == 0) {
-    printf(">> Unicast\n");
-    server_rep=do_write_unicast(sock, msg, first_client);
-  }
-
-  // create channel ------------------------------------------------
-  else if(strcmp("/create", cmd) == 0) {
-    sprintf(server_rep, "[%s]> You need to quit the channel", channel->name);
-  }
-
-  // join channel ------------------------------------------------
-  else if(strcmp("/join", cmd) == 0) {
-    sprintf(server_rep, "[%s]> You need to quit the channel", channel->name);
-    }
-
-    else
-      server_rep=NULL;
-
-    do_write(server_rep, sock);
-    // Write multicast
-    do_write_broadcast(sock, cmd, channel->client);  // Attention juste premier mot
-}
 
 /* -------------- Cleanup socket -------------- */
 void do_close(int sock_closed, struct clt* first_client){

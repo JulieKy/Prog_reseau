@@ -3,7 +3,7 @@
 /* -------------- Definition de la structure channel------------- */
 struct channel {
   char* name;
-  struct clt* client;
+  int nb_members;
   struct channel* next;
 };
 

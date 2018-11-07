@@ -56,7 +56,6 @@ struct channel* channel_find_name(struct channel* first_channel, char* name){
   return NULL;
 }
 
-
 /* -------------- Remove a channel from the list -------------- */
 struct channel* remove_channel(struct channel* first_channel, struct channel* removed_channel){
 

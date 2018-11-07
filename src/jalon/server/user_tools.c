@@ -43,6 +43,9 @@ struct clt* client_new(int sockfd, char* IP, unsigned short port){
   // Port
   new_client->port=port;
 
+  // channel
+  char* channel=NULL;
+
   return new_client;
  }
 

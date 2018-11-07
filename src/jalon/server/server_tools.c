@@ -104,9 +104,18 @@ void do_write(char* buf, int new_sock){
 void do_write_broadcast(int sock, char* msg, struct clt* first_client){
     // Recovery of the sender's pseudo to send : "[User0]: msg"
     struct clt* sender=client_find_sock(first_client, sock);
-    char* psd=sender->psd;
+    //struct channel* channel=
+
+    if (channel_test==0){
+      char* name=sender->psd;
+    }
+    else {
+
+      char* name=channel->name;
+    }
+
     char* msg_pseudo = malloc(sizeof (char) * MSG_MAXLEN);
-    sprintf(msg_pseudo, "[%s]: %s\n" , psd, msg);
+    sprintf(msg_pseudo, "[%s]: %s\n" , name, msg);
     struct clt* temp=first_client;
     printf("[write broadcast] : %s\n", msg_pseudo);
     while (temp!=NULL){
@@ -152,7 +161,8 @@ char* do_write_unicast(int sock, char* msg, struct clt* first_client){
     return rep;
 }
 
-/* -------------- Test the different queries -------------- */
+
+/* -------------- Test the different queries when client isn't in a channel -------------- */
 struct channel* treat_writeback(char *buf, struct clt* first_client, int sock, struct channel* first_channel) {
 
   struct channel* list_channel= first_channel;
@@ -217,7 +227,6 @@ struct channel* treat_writeback(char *buf, struct clt* first_client, int sock, s
     // whois ---------------------------------------------------------
   else if(strcmp("/whois", cmd) == 0) {
     printf(">> Le client veut consulter les informations d'un utilisateur : /whois <pseudo>\n");
-    char* re = malloc(sizeof (char) * MSG_MAXLEN);
     if (strlen(msg)==0)
       rep = "You have to specify the name of the user\n";
     else {
@@ -257,7 +266,7 @@ struct channel* treat_writeback(char *buf, struct clt* first_client, int sock, s
     else {
       struct channel* channel_joined = channel_find_name(list_channel,msg);
       printf("aaaa\n");
-      struct clt* first_client= channel_joined->client;
+      struct clt first_client= *channel_joined->client;
       printf("bbbbb\n");
       struct clt* client= client_find_sock(first_client, sock);
       printf("ccccc\n");
@@ -279,6 +288,93 @@ struct channel* treat_writeback(char *buf, struct clt* first_client, int sock, s
   return list_channel;
 }
 
+
+/* -------------- Test the different queries when client isn't in a channel -------------- */
+struct channel* treat_writeback_channel(char *buf, struct clt* first_client, int sock, struct channel* first_channel) {
+  struct channel* list_channel= first_channel;
+
+  char* cmd = malloc(sizeof (char) * MSG_MAXLEN);
+  char* msg = malloc(sizeof (char) * MSG_MAXLEN);
+  char* rep = malloc(sizeof (char) * MSG_MAXLEN);
+  char* server_rep = malloc(sizeof (char) * MSG_MAXLEN);
+
+  sscanf(buf, "%s %s" , cmd, msg);
+
+  struct clt* client=client_find_sock(first_client, sock);
+  struct channel* channel=channel_find_name(first_channel, client->psd);
+
+  // quit --------------------------------------------------------------
+  if(strcmp("/quit",cmd)==0){
+    sprintf(server_rep, "Channel %s quitted\n", client->channel);
+    client->channel=NULL;
+    remove_client(first_client, clients);
+  }
+
+  // nick ------------------------------------------------------------
+  else if(strcmp("/nick", cmd) == 0) {
+    printf("Le client entre son pseudo\n");
+    if (strlen(msg)<2){
+      rep ="Your pseudo must be 2 letters long\n";
+      sprintf(server_rep, "[%s]> %s", channel->name, rep);
+    }
+    else{
+      client->psd=msg;
+      //strcpy(client->psd,msg);
+      // A COMPLETER pour mettre aussi à jour pseudo dans channel
+      printf(">> Le nouveau pseudo du client %d est : %s\n",sock, client->psd);
+      sprintf(server_rep, "[%s]> Your pseudo is %s\n" , channel->name, client->psd);
+    }
+  }
+
+    // who -------------------------------------------------------------
+  else if (strcmp("/who", cmd) == 0) {
+    printf("Le client veut consulter la liste des clients connectés\n");
+    rep =who(first_client) ;
+    sprintf(server_rep, "[%s]> %s",channel->name, rep);
+
+  }
+
+    // whois ---------------------------------------------------------
+  else if(strcmp("/whois", cmd) == 0) {
+    printf(">> Le client veut consulter les informations d'un utilisateur : /whois <pseudo>\n");
+    if (strlen(msg)==0)
+      rep = "You have to specify the name of the user\n";
+    else {
+      rep =whois(first_client, msg);
+    }
+    sprintf(server_rep, "[%s]> %s", channel->name, rep);
+  }
+
+    // msgall ------------------------------------------------------
+  else if(strcmp("/msgall", cmd) == 0) {
+    printf(">> Broadcast\n");
+    do_write_broadcast(sock, msg, first_client);
+    server_rep=NULL;
+  }
+
+    // msg ---------------------------------------------------------
+  else if(strcmp("/msg", cmd) == 0) {
+    printf(">> Unicast\n");
+    server_rep=do_write_unicast(sock, msg, first_client);
+  }
+
+  // create channel ------------------------------------------------
+  else if(strcmp("/create", cmd) == 0) {
+    sprintf(server_rep, "[%s]> You need to quit the channel", channel->name);
+  }
+
+  // join channel ------------------------------------------------
+  else if(strcmp("/join", cmd) == 0) {
+    sprintf(server_rep, "[%s]> You need to quit the channel", channel->name);
+    }
+
+    else
+      server_rep=NULL;
+
+    do_write(server_rep, sock);
+    // Write multicast
+    do_write_broadcast(sock, cmd, channel->client);  // Attention juste premier mot
+}
 
 /* -------------- Cleanup socket -------------- */
 void do_close(int sock_closed, struct clt* first_client){

@@ -97,7 +97,12 @@ int main(int argc, char** argv) {
         char* buf;
         buf=do_read(fds[i].fd);
         printf("[read] : %s\n", buf);
-        list_channel= treat_writeback(buf, first_client, fds[i].fd, list_channel);
+        if (client_find_sock(first_client, fds[i].fd)->channel == NULL) {
+          list_channel= treat_writeback(buf, first_client, fds[i].fd, list_channel);
+        }
+        else {
+          list_channel= treat_writeback_channel(buf, first_client, fds[i].fd, list_channel);
+        }
 
         // Fermeture de la socket
         if(strcmp("/quit\n", buf) == 0) {

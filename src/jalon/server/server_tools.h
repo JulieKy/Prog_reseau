@@ -17,10 +17,13 @@ void do_write_broadcast(int, char*, struct clt*);
 
 // Write a unicast message
 char* do_write_unicast(int sock, char* msg, struct clt* first_client);
-
+ 
 void do_write(char*, int);
 
 void do_close(int, struct clt*);
 
-/* -------------- Test the different queries -------------- */
+/* -------------- Test the different queries when client isn't in a channel -------------- */
 struct channel* treat_writeback(char *buf, struct clt* first_client, int sock, struct channel* first_channel);
+
+/* -------------- Test the different queries when client is in a channel -------------- */
+struct channel* treat_writeback_channel(char *buf, struct clt* first_client, int sock, struct channel* first_channel);

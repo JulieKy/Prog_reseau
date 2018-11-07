@@ -5,6 +5,7 @@ struct clt {
   char* date;
   unsigned short port;
   char* IP;
+  char* channel;
   struct clt* next;
 };
 
@@ -25,7 +26,6 @@ struct clt* client_find_sock(struct clt*, int sock);
 
 // Find a client thanks to his pseudo
 struct clt* client_find_pseudo(struct clt*, char*);
-
 
 // Create the list of online users
 char* who(struct clt*);

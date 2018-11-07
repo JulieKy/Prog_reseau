@@ -252,16 +252,22 @@ struct channel* treat_writeback(char *buf, struct clt* first_client, int sock, s
 
   // join channel ------------------------------------------------
   else if(strcmp("/join", cmd) == 0) {
-    if ((list_channel==NULL) || (channel_find_name(list_channel,msg)!=NULL))
+    if ((list_channel==NULL) || (channel_find_name(list_channel,msg)==NULL))
       sprintf(server_rep, "[Server]: Channel %s doesn't exist", msg);
     else {
       struct channel* channel_joined = channel_find_name(list_channel,msg);
+      printf("aaaa\n");
       struct clt* first_client= channel_joined->client;
+      printf("bbbbb\n");
       struct clt* client= client_find_sock(first_client, sock);
-      first_client=client_add_2(first_client, client);
+      printf("ccccc\n");
+      struct clt* f_client=client_add_2(first_client, client);
+      printf("dddddd\n");
       channel_joined->client=first_client;
+      printf("eeeee\n");
       printf(">> Client %s add to channel %s\n", client->psd, channel_joined->name);
       sprintf(server_rep, "[%s]> You have joined %s", channel_joined->name, channel_joined->name);
+      printf("fffff\n");
     }
   }
 

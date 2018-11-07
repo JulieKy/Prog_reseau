@@ -57,8 +57,14 @@ struct clt* client_add(struct clt* first_client, int sockfd, char* IP, unsigned 
 
 /* -------------- Add a struct client to the list -------------- */
 struct clt* client_add_2(struct clt* first_client, struct clt* client){
+  printf("wwwwww\n");
+  client->next=NULL;
+  printf("zzzzz\n");
   client->next=first_client;
-  return client;
+  printf("yyyyyyy\n");
+  first_client=client;
+  printf("qqqqqqq\n");
+  return first_client;
 }
 
 /* -------------- Find a client thanks to his socket number -------------- */

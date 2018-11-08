@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
   // Initialisation de la liste de channels
   struct channel* list_channel;
   list_channel=channel_list_init();
-  
+
   // Definition du tableau de structures pollfd
   struct pollfd fds[20];
   int n;
@@ -96,8 +96,16 @@ int main(int argc, char** argv) {
         // read
         char* buf;
         buf=do_read(fds[i].fd);
-        printf("[read] : %s\n", buf);
+        //printf("[read] : %s\n", buf);
         list_channel= treat_writeback(buf, first_client, fds[i].fd, list_channel);
+
+
+        struct clt* client=client_find_sock(first_client, fds[i].fd);
+        if (client!=NULL) {
+          char* channel_name = malloc(sizeof (char) * 60);
+          sprintf(channel_name, "[%s]> ", client->channel);
+          do_write(channel_name, fds[i].fd);
+        }
 
         // Fermeture de la socket
         if(strcmp("/quit\n", buf) == 0) {

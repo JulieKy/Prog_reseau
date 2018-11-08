@@ -12,6 +12,8 @@ SET(SRC_SERVER
 	user_tools.c
 	channel_tools.h
 	channel_tools.c
+	cmd_tools.h
+	cmd_tools.c
     )
 
 

@@ -88,49 +88,10 @@ struct clt* client_find_channel(struct clt* client, char* channel_name){
 
   if (strcmp(client->channel, channel_name)==0)
     return client;
-    
+
   return NULL;
 }
 
-/* -------------- Create the list of online users -------------- */
-char* who(struct clt* first_client) {
-
-  if (first_client->next==NULL)
-    return "You are the only client\n";
-
-  else {
-    char* list_pseudo=malloc(sizeof (char) *200);
-    strcat(list_pseudo, "Online users are :\n");
-
-    struct clt* temp=first_client;
-
-    while (temp!=NULL){
-     char* pseudo=malloc(sizeof (char) *200);
-     sprintf(pseudo, "             - %s\n",temp->psd);
-     strcat(list_pseudo, pseudo);
-     temp=temp->next;
-    }
-    return list_pseudo;
-  }
-}
-
-/* -------------- Create the list of online users -------------- */
-char* whois(struct clt* first_client, char* pseudo) {
-    struct clt* whois_client=client_find_pseudo(first_client,pseudo);
-    printf("length client->psd=%ld\n", strlen(first_client->psd));
-    printf("length pseudo (entree whois)=%ld\n\n", strlen(pseudo));
-    printf("pseudo=%s\n", first_client->psd);
-    printf("msg=%s", pseudo);
-    printf("a\n");
-    if (whois_client==NULL){
-      char* rep="This user is not logged in";
-      return rep;
-    }
-
-    char* client_info=malloc(sizeof (char) *200);
-    sprintf(client_info, "%s connected since %s with IP address %s and port %d",whois_client->psd, whois_client->date, whois_client->IP, whois_client->port);
-    return client_info;
-}
 
 /* -------------- Remove a client from the list -------------- */
 struct clt* remove_client(struct clt* first_client, struct clt* removed_client){

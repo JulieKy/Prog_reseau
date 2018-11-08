@@ -1,4 +1,3 @@
-#include "user_tools.h"
 
 /* -------------- Definition de la structure channel------------- */
 struct channel {

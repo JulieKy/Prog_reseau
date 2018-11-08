@@ -9,6 +9,7 @@
 #include <arpa/inet.h>
 #include <time.h>
 
+#include "user_tools.h"
 #include "channel_tools.h"
 
 /* -------------- Create a new list of channels-------------- */

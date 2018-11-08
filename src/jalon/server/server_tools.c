@@ -144,7 +144,7 @@ void do_write_multicast(struct clt* first_client, struct clt* client, char* msg,
 
     struct clt* temp=first_client;
     while (temp!=NULL){
-      if (client->sockfd!=temp->sockfd) {
+      if ((client->sockfd!=temp->sockfd) && (strcmp(temp->channel, channel->name)==0)){
         write(temp->sockfd, msg_pseudo, MSG_MAXLEN);
       }
     temp=temp->next;

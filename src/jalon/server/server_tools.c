@@ -152,32 +152,30 @@ void do_write_multicast(struct clt* first_client, struct clt* client, char* msg,
 }
 
 /* -------------- Write a unicast message -------------- */
-char* do_write_unicast(int sock, char* msg, struct clt* first_client){
+char* do_write_unicast(int sock, char* pseudo, char* msg, struct clt* first_client){
     // Find the receiver's pseudo and the message
     char* rcver_psd= malloc(sizeof (char) * MSG_MAXLEN);
     char* message= malloc(sizeof (char) * MSG_MAXLEN);
     char* rep= malloc(sizeof (char) * MSG_MAXLEN);
 
-    sscanf(msg, "%s" , rcver_psd);
-    sprintf(message, "%s", msg+sizeof(rcver_psd));
-    printf("msg=%s\n",message);
+    printf("pseudo=%s\n",pseudo);
+    printf("msg=%s\n",msg);
 
     // Find the receiver
-    struct clt* rcver=client_find_pseudo(first_client, rcver_psd);
+    struct clt* rcver=client_find_pseudo(first_client, pseudo);
 
     if (rcver==NULL){
       rep = "This user doesn't exist.";
-      printf("pas ce pseudo, rep =%s\n", rep);
     }
 
     else {
       rep=NULL;
 
-      // Recovery of the sender's pseudo to send : "[User0]: msg"
+      // Recovery of the sender's pseudo to send : "[User]: msg"
       struct clt* sender=client_find_sock(first_client, sock);
       char* psd=sender->psd;
       char* msg_pseudo = malloc(sizeof (char) * MSG_MAXLEN);
-      sprintf(msg_pseudo, "[%s]: %s\n" , psd, message);
+      sprintf(msg_pseudo, "[%s]: %s\n" , psd, msg);
 
       //Write to the receiver
       write(rcver->sockfd, msg_pseudo, MSG_MAXLEN);
@@ -326,7 +324,9 @@ struct channel* treat_writeback(char *buf, struct clt* first_client, int sock, s
     // msg ---------------------------------------------------------
   else if(strcmp("/msg", cmd) == 0) {
     printf(">> Unicast\n");
-    server_rep=do_write_unicast(sock, msg, first_client);
+    char* pseudo = malloc(sizeof (char) * MSG_MAXLEN);
+    sscanf(buf, "%s %s %s" , cmd, pseudo, msg);
+    server_rep=do_write_unicast(sock, pseudo, msg, first_client);
   }
 
   // create channel ------------------------------------------------

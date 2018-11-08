@@ -19,7 +19,7 @@ void do_write_broadcast(int, char*, struct clt*);
 void do_write_multicast(struct clt*, struct clt*, char*, struct channel*);
 
 // Write a unicast message
-char* do_write_unicast(int sock, char* msg, struct clt* first_client);
+char* do_write_unicast(int sock, char* pseudo, char* msg, struct clt* first_client);
 
 void do_write(char*, int);
 

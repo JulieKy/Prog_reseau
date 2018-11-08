@@ -24,6 +24,10 @@ struct clt* client_find_sock(struct clt*, int sock);
 // Find a client thanks to his pseudo
 struct clt* client_find_pseudo(struct clt*, char*);
 
+/* -------------- Test if the client belong to this channel -------------- */
+struct clt* client_find_channel(struct clt* client, char* channel_name);
+
+
 // Create the list of online users
 char* who(struct clt*);
 

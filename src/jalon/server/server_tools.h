@@ -15,10 +15,19 @@ char* do_read(int);
 // Write a broadcast message
 void do_write_broadcast(int, char*, struct clt*);
 
+// Write a multicast message
+void do_write_multicast(struct clt*, struct clt*, char*, struct channel*);
+
 // Write a unicast message
 char* do_write_unicast(int sock, char* msg, struct clt* first_client);
- 
+
 void do_write(char*, int);
+
+/* -------------- Create the list of online users -------------- */
+char* what_channels(struct channel* first_channel);
+
+/* -------------- Create the list of online members in a channel -------------- */
+char* who_channels(struct channel* list_channel, char * msg, struct clt* list_client);
 
 void do_close(int, struct clt*);
 

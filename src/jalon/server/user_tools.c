@@ -83,6 +83,15 @@ struct clt* client_find_pseudo(struct clt* first_client, char* pseudo){
   return found_client;
 }
 
+/* -------------- Test if the client belong to this channel -------------- */
+struct clt* client_find_channel(struct clt* client, char* channel_name){
+
+  if (strcmp(client->channel, channel_name)==0)
+    return client;
+    
+  return NULL;
+}
+
 /* -------------- Create the list of online users -------------- */
 char* who(struct clt* first_client) {
 

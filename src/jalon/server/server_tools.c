@@ -1,16 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <time.h>
-#include <sys/poll.h>
-
-#include "user_tools.h"
-#include "channel_tools.h"
-#include "cmd_tools.h"
 #include "server_tools.h"
 
 #define MSG_MAXLEN 200

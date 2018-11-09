@@ -1,3 +1,17 @@
+#ifndef SERVER_TOOLS_H_
+#define SERVER_TOOLS_H_
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <time.h>
+#include <sys/poll.h>
+
+#include "cmd_tools.h"
 
 /* -------------- Create the socket and check the validity -------------- */
 int do_socket();
@@ -28,3 +42,5 @@ struct channel* treat_writeback(char *buf, struct clt* first_client, int sock, s
 
 /* -------------- Cleanup socket -------------- */
 void do_close(int, struct clt*);
+
+#endif

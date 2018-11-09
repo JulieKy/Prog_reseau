@@ -1,3 +1,18 @@
+#ifndef CMD_TOOLS_H_
+#define CMD_TOOLS_H_
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+
+#include <arpa/inet.h>
+#include <time.h>
+
+#include "channel_tools.h"
 
 /* -------------- First pseudo -------------- */
 char* first_pseudo(struct clt* client, char* msg);
@@ -34,3 +49,6 @@ char* join_channel(struct clt* client, char* msg, struct channel* first_channel)
 
 /* -------------- Join channel -------------- */
 char* quit(struct clt* first_client, struct clt* client, char* msg, struct channel* first_channel);
+
+
+#endif

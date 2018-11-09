@@ -1,3 +1,19 @@
+#ifndef CHANNEL_TOOLS_H_
+#define CHANNEL_TOOLS_H_
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+
+#include <arpa/inet.h>
+#include <time.h>
+
+#include "user_tools.h"
 
 /* -------------- Definition de la structure channel------------- */
 struct channel {
@@ -28,3 +44,5 @@ struct channel* remove_channel(struct channel* first_channel, struct channel* re
 
 /* -------------- Return the number of connected clients -------------- */
 int nbre_channel(struct channel* first_channel);
+
+#endif

@@ -1,14 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-
-#include <arpa/inet.h>
-#include <time.h>
-
 #include "channel_tools.h"
 
 /* -------------- Create a new list of channels-------------- */
@@ -29,8 +18,6 @@ struct channel* channel_new(char* name){
 
 /* -------------- Add a channel to the list -------------- */
 struct channel* channel_add(struct channel* first_channel, char* name){
-
-  printf(">> Addition of a new channel\n");
 
   struct channel* new_channel=channel_new(name);
   new_channel->next=first_channel;
@@ -98,6 +85,7 @@ int nbre_channel(struct channel* first_channel){
       temp=temp->next;
       c++;
     }
+    printf("c====%d\n", c);
     return c;
   }
 }

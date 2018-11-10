@@ -1,4 +1,18 @@
-// Definition de la structure client
+#ifndef USERS_TOOLS_H
+#define USERS_TOOLS_H_
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+
+#include <arpa/inet.h>
+#include <time.h>
+
+/* --------------  Definition de la structure client -------------- */
 struct clt {
   int sockfd;
   char* psd;
@@ -9,33 +23,36 @@ struct clt {
   struct clt* next;
 };
 
-// Create a new list of clients
+
+/* --------------  Create a new list of clients -------------- */
 struct clt* client_list_init();
 
-// Create a new client
+
+/* --------------  Create a new client-------------- */
 struct clt* client_new(int, char*,unsigned short);
 
-// Add a client to the list
+
+/* --------------  Add a client to the list -------------- */
 struct clt* client_add(struct clt*, int, char*, unsigned short);
 
-// Find a client thanks to his sockfd
+
+/* -------------- Find a client thanks to his sockfd -------------- */
 struct clt* client_find_sock(struct clt*, int sock);
 
-// Find a client thanks to his pseudo
+
+/* --------------  Find a client thanks to his pseudo -------------- */
 struct clt* client_find_pseudo(struct clt*, char*);
+
 
 /* -------------- Test if the client belong to this channel -------------- */
 struct clt* client_find_channel(struct clt* client, char* channel_name);
 
 
-// Create the list of online users
-char* who(struct clt*);
-
-// Create the list of online users
-char* whois(struct clt*, char*);
-
-// Remove a client from the list
+/* --------------  Remove a client from the list -------------- */
 struct clt* remove_client(struct clt*, struct clt*);
 
-// Count the number of clients
+
+/* --------------  Count the number of clients -------------- */
 int nbre_client(struct clt*);
+
+#endif

@@ -1,38 +1,46 @@
+#ifndef SERVER_TOOLS_H_
+#define SERVER_TOOLS_H_
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <time.h>
+#include <sys/poll.h>
+
+#include "cmd_tools.h"
+
+/* -------------- Create the socket and check the validity -------------- */
 int do_socket();
 
+/* -------------- Init the serv_add structure -------------- */
 struct sockaddr_in init_serv_addr(int);
 
+/* -------------- Perform the binding -------------- */
 void do_bind(int, struct sockaddr_in);
 
+/* -------------- Listen to clients -------------- */
 void do_listen(int, struct sockaddr_in);
 
+/* -------------- Accept connection from client -------------- */
 int do_accept(struct sockaddr_in*, int);
 
+/* -------------- Accept 20 concurrent client -------------- */
 int test_nb_users(struct pollfd*, int, int, int, struct sockaddr_in);
 
+/* -------------- Read what the client has to say -------------- */
 char* do_read(int);
 
-// Write a broadcast message
-void do_write_broadcast(int, char*, struct clt*);
-
-// Write a multicast message
-void do_write_multicast(struct clt*, struct clt*, char*, struct channel*);
-
-// Write a unicast message
-char* do_write_unicast(int sock, char* pseudo, char* msg, struct clt* first_client);
-
-void do_write(char*, int);
-
-/* -------------- Create the list of online users -------------- */
-char* what_channels(struct channel* first_channel);
-
-/* -------------- Create the list of online members in a channel -------------- */
-char* who_channels(struct channel* list_channel, char * msg, struct clt* list_client);
-
-void do_close(int, struct clt*);
+/* -------------- We write back to the client -------------- */
+void do_write(char* buf, int new_sock);
 
 /* -------------- Test the different queries when client isn't in a channel -------------- */
 struct channel* treat_writeback(char *buf, struct clt* first_client, int sock, struct channel* first_channel);
 
-/* -------------- Test the different queries when client is in a channel -------------- */
-struct channel* treat_writeback_channel(char *buf, struct clt* first_client, int sock, struct channel* first_channel);
+/* -------------- Cleanup socket -------------- */
+void do_close(int, struct clt*);
+
+#endif

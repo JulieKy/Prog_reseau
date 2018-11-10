@@ -7,11 +7,13 @@
 char* first_pseudo(struct clt* client, char* msg){
 
   char* rep = malloc(sizeof (char) * MSG_MAXLEN);
+  char* rep2 = malloc(sizeof (char) * MSG_MAXLEN);
 
   client->psd=msg;
   //strcpy(client->psd,msg);
-  printf(">> Le pseudo du client %d est : %s\n",sock, client->psd);
-  rep = "Welcome on the chat";
+  printf(">> Le pseudo du client %d est : %s\n",client->sockfd, client->psd);
+  rep2 = "Welcome on the chat";
+  sprintf(rep, "  %s %s\n" , rep2, client->psd);
   return rep;
 }
 
@@ -29,7 +31,7 @@ char* nick(struct clt* client, char* msg){
   else {
     client->psd=msg;
     //strcpy(client->psd,msg);
-    printf(">> Le nouveau pseudo du client %d est : %s\n",sock, client->psd);
+    printf(">> Le nouveau pseudo du client %d est : %s\n",client->sockfd, client->psd);
     rep2 = "Your new pseudo is";
     sprintf(rep, "  %s %s\n" , rep2, client->psd);
   }
@@ -75,7 +77,7 @@ char* whois(struct clt* first_client, char* pseudo) {
 
 
 
-/* -------------- Create the list of online users -------------- */
+/* -------------- Give the channels created -------------- */
 char* what_channels(struct channel* first_channel) {
   char* list_pseudo=malloc(sizeof (char) *200);
 
@@ -102,31 +104,37 @@ char* what_channels(struct channel* first_channel) {
 }
 
 
-/* -------------- Create the list of online members in a channel -------------- */
+/* -------------- Create the list of members in a channel -------------- */
 char* who_channels(struct channel* list_channel, char * msg, struct clt* list_client) {
 
   struct channel* channel=channel_find_name(list_channel, msg);
   struct clt* client=list_client;
   char* list_pseudo=malloc(sizeof (char) *200);
 
-  if (client==NULL) {
+  if (channel==NULL) {
     list_pseudo = "This channel doesn't exist\n";
   }
 
   else {
 
-    sprintf(list_pseudo, "Members in channel %s :\n", channel->name);
-    struct clt* client_found;
-    char* pseudo=malloc(sizeof (char) *200);
-
-    while (client!=NULL){
-      client_found=client_find_channel(client, channel->name);
-      if (client_found!=NULL) {
-        sprintf(pseudo, "                      - %s\n",client_found->psd);
-        strcat(list_pseudo, pseudo);
+    if (client_find_channel(client, channel->name) ==NULL){
+      list_pseudo="No members in this channel";
     }
-    client=client->next;
-  }
+
+    else {
+      sprintf(list_pseudo, "Members in channel %s :\n", channel->name);
+      struct clt* client_found;
+      char* pseudo=malloc(sizeof (char) *200);
+
+      while (client!=NULL){
+        client_found=client_find_channel(client, channel->name);
+        if (client_found!=NULL) {
+          sprintf(pseudo, "                      - %s\n",client_found->psd);
+          strcat(list_pseudo, pseudo);
+        }
+      client=client->next;
+      }
+    }
     return list_pseudo;
   }
 }
@@ -216,9 +224,10 @@ void do_write_multicast(struct clt* first_client, struct clt* client, char* msg,
 
 
 /* -------------- Create a channel -------------- */
-char* create_channel(struct clt* client, char* msg, struct channel* first_channel){
+char* create_channel(struct clt* client, char* msg, struct channel* list_channel){
 
   char* rep = malloc(sizeof (char) * MSG_MAXLEN);
+  char* server_rep = malloc(sizeof (char) * MSG_MAXLEN);
 
   if (strcmp(client->channel, "Server")==0){
 
@@ -227,6 +236,7 @@ char* create_channel(struct clt* client, char* msg, struct channel* first_channe
 
     else {
       list_channel=channel_add(list_channel, msg);
+      printf("pseudo channel =%s\n", list_channel->name);
       printf(">> Number of channels : %d\n", nbre_channel(list_channel));
       sprintf(rep, "You have created channel %s\n", list_channel->name);
     }
@@ -243,10 +253,11 @@ char* create_channel(struct clt* client, char* msg, struct channel* first_channe
 
 
 /* -------------- Join channel -------------- */
-char* join_channel(struct clt* client, char* msg, struct channel* first_channel){
+char* join_channel(struct clt* client, char* msg, struct channel* list_channel){
 
   char* rep = malloc(sizeof (char) * MSG_MAXLEN);
   char* server_rep = malloc(sizeof (char) * MSG_MAXLEN);
+  struct channel* channel= malloc(sizeof (struct channel) * MSG_MAXLEN);
 
   if (strcmp(client->channel, "Server")==0){
     if (channel_find_name(list_channel,msg)==NULL){
@@ -270,17 +281,16 @@ char* join_channel(struct clt* client, char* msg, struct channel* first_channel)
 }
 
 /* -------------- Join channel -------------- */
-char* quit(struct clt* first_client, struct clt* client, char* msg, struct channel* first_channel){
+char* quit(struct clt* first_client, struct clt* client, char* msg, struct channel* list_channel){
 
   char* rep = malloc(sizeof (char) * MSG_MAXLEN);
   char* server_rep = malloc(sizeof (char) * MSG_MAXLEN);
-
 
   if(strcmp(client->channel, "Server")!=0) {
 
     if (strcmp(client->channel, msg)!=0) {
       sprintf(rep, "You can only quit the channel %s\n",client->channel);
-      sprintf(server_rep, " [%s]> %s\n" , channel->name, rep);
+      sprintf(server_rep, " [%s]> %s\n" , client->channel, rep);
     }
 
     else {

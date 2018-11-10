@@ -13,6 +13,7 @@
 #include <time.h>
 
 #include "channel_tools.h"
+#include "server_tools.h"
 
 /* -------------- First pseudo -------------- */
 char* first_pseudo(struct clt* client, char* msg);

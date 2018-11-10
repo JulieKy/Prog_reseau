@@ -117,7 +117,7 @@ struct channel* treat_writeback(char *buf, struct clt* first_client, int sock, s
   // nick ------------------------------------------------------------
   else if(strcmp("/nick", cmd) == 0) {
     rep=nick(client, msg);
-    sprintf(server_rep, " [Server]> %s %s\n" , rep2, client->psd);
+    sprintf(server_rep, " [Server]> %s %s\n" , rep, client->psd);
   }
 
   // who -------------------------------------------------------------
@@ -171,13 +171,31 @@ struct channel* treat_writeback(char *buf, struct clt* first_client, int sock, s
 
   // create channel ------------------------------------------------
   else if(strcmp("/create", cmd) == 0) {
-    server_rep=create_channel(client, msg, list_channel);
+
+    if (strcmp(client->channel, "Server")==0){
+
+      if ((list_channel!=NULL) && (channel_find_name(list_channel,msg)!=NULL))
+        sprintf(rep, "Channel %s already exists\n", msg);
+
+      else {
+        list_channel=channel_add(list_channel, msg);
+        printf("pseudo channel =%s\n", list_channel->name);
+        printf(">> Number of channels : %d\n", nbre_channel(list_channel));
+        sprintf(rep, "You have created channel %s\n", list_channel->name);
+      }
+    }
+
+    else {
+    rep= "You need to quit the channel\n";
+    }
+
+    sprintf(server_rep, " [Server]> %s\n" , rep);
+    //server_rep=create_channel(client, msg, list_channel);
   }
 
   // join channel ------------------------------------------------
   else if(strcmp("/join", cmd) == 0) {
     server_rep=join_channel(client, msg, list_channel);
-
   }
 
     // quit --------------------------------------------------------------

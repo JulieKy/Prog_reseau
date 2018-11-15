@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <fcntl.h>
 
 #include <arpa/inet.h>
 #include <time.h>
@@ -37,7 +38,7 @@ char* who_channels(struct channel* list_channel, char * msg, struct clt* list_cl
 void do_write_broadcast(int sock, char* msg, struct clt* first_client);
 
 /* -------------- Write a unicast message -------------- */
-char* do_write_unicast(int sock, char* pseudo, char* msg, struct clt* first_client);
+char* do_write_unicast(int sock_sender, char* pseudo_rcv, char* msg, struct clt* first_client);
 
 /* -------------- Write a multicast message -------------- */
 void do_write_multicast(struct clt* first_client, struct clt* client, char* msg, struct channel* first_channel);
@@ -47,6 +48,9 @@ char* create_channel(struct clt* client, char* msg, struct channel* first_channe
 
 /* -------------- Join channel -------------- */
 char* join_channel(struct clt* client, char* msg, struct channel* first_channel);
+
+/* -------------- Send a file -------------- */
+char* send_file(struct clt* first_client, struct clt* client, char* user_rcv, char* file);
 
 /* -------------- Join channel -------------- */
 char* quit(struct clt* first_client, struct clt* client, char* msg, struct channel* first_channel);

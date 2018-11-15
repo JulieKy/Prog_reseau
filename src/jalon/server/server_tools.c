@@ -198,6 +198,14 @@ struct channel* treat_writeback(char *buf, struct clt* first_client, int sock, s
     server_rep=join_channel(client, msg, list_channel);
   }
 
+  // send a file ------------------------------------------------
+  else if(strcmp("/send", cmd) == 0) {
+    char* user_rcv = malloc(sizeof (char) * MSG_MAXLEN);
+    char* file = malloc(sizeof (char) * MSG_MAXLEN);
+    sscanf(buf, "%s %s %s" , cmd, user_rcv, file);
+    server_rep=send_file(first_client, client, user_rcv, file);
+  }
+
     // quit --------------------------------------------------------------
     else if(strcmp("/quit",cmd)==0){
       server_rep=quit(first_client, client, msg, list_channel);

@@ -61,15 +61,32 @@ struct clt* client_find_sock(struct clt* first_client, int sock){
 /* -------------- Find a client thanks to his pseudo -------------- */
 struct clt* client_find_pseudo(struct clt* first_client, char* pseudo){
 
-  struct clt* found_client=first_client;
+  // struct clt* found_client=first_client;
+  //
+  // if (strcmp(pseudo, found_client->psd)==0)
+  //   return found_client;
+  //
+  // while (found_client!=NULL && (strcmp(pseudo, found_client->psd)!=0)){
+  //   found_client=found_client->next;
+  // }
+  // return found_client;
 
-  if (strcmp(pseudo, found_client->psd)==0)
-    return found_client;
-
-  while (found_client!=NULL && (strcmp(pseudo, found_client->psd)!=0)){
-    found_client=found_client->next;
+  //
+  if (first_client==NULL){
+    return NULL;
   }
-  return found_client;
+
+  struct clt* temp=first_client;
+
+  if (strcmp(pseudo, temp->psd)==0)
+    return temp;
+
+  while (temp!=NULL){
+    if (strcmp(pseudo, temp->psd)==0) 
+      return temp;
+    temp=temp->next;
+  }
+  return NULL;
 }
 
 /* -------------- Test if the client belong to this channel -------------- */

@@ -175,7 +175,7 @@ void do_write_broadcast(int sock, char* msg, struct clt* first_client){
 
 
 /* -------------- Write a unicast message -------------- */
-char* do_write_unicast(int sock, char* pseudo, char* msg, struct clt* first_client){
+char* do_write_unicast(int sock, char* pseudo, char* msg, struct clt* first_client, int test_send){
     // Find the receiver's pseudo and the message
     char* rcver_psd= malloc(sizeof (char) * MSG_MAXLEN);
     char* message= malloc(sizeof (char) * MSG_MAXLEN);
@@ -195,7 +195,13 @@ char* do_write_unicast(int sock, char* pseudo, char* msg, struct clt* first_clie
       struct clt* sender=client_find_sock(first_client, sock);
       char* psd=sender->psd;
       char* msg_pseudo = malloc(sizeof (char) * MSG_MAXLEN);
-      sprintf(msg_pseudo, "[%s]: %s\n" , psd, msg);
+      if (test_send==0) {
+        sprintf(msg_pseudo, "[%s]> %s\n" , psd, msg);
+      }
+      else {
+        sprintf(msg_pseudo, "[Server]> %s\n" , msg);
+      }
+
 
       //Write to the receiver
       write(rcver->sockfd, msg_pseudo, MSG_MAXLEN);
@@ -298,14 +304,14 @@ char* send_file(struct clt* first_client, struct clt* client, char* user_rcv, ch
     return server_rep;
   }
 
-  // Si mauvais chemin
-  printf("file = %s\n", file); /*ENLEVER "" avant open ? */
-  int ficfd;
-  if ((ficfd=open(file, O_RDONLY))== -1){ // N'existe pas.. Probleme avec open
-    sprintf(rep, "File doesn't exist");
-    sprintf(server_rep, " [Server]> %s\n" , rep);
-    return server_rep;
-  }
+  // // Si mauvais chemin
+  // printf("file = %s\n", file); /*ENLEVER "" avant open ? */
+  // int ficfd;
+  // if ((ficfd=open(file, O_RDONLY))== -1){ // N'existe pas.. Probleme avec open
+  //   sprintf(rep, "File doesn't exist");
+  //   sprintf(server_rep, " [Server]> %s\n" , rep);
+  //   return server_rep;
+  // }
 
   // Verif du nom du file et du user
 
@@ -319,8 +325,8 @@ char* send_file(struct clt* first_client, struct clt* client, char* user_rcv, ch
   // }
 
   file_name=file; // A changer pour avoirjuste le nom et pas tout le chemin
-  sprintf(msg, "%s wants you to accept the transfer of the file named \"%s\". Do you accept? [Y/n]", client->psd, file_name);
-  do_write_unicast(client->sockfd, user_rcv, msg, first_client);
+  sprintf(msg, "? %s wants you to accept the transfer of the file named \"%s\". Do you accept? [y/n]", client->psd, file_name);
+  do_write_unicast(client->sockfd, user_rcv, msg, first_client, 1);
   // nouvelle fonction qui attend reponse et qui la renvoie
   if (strcmp(rep_user, "Y")==0) {
     // Envoyer message à C1 pour création socket + envoi du fichier

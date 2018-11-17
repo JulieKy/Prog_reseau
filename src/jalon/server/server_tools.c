@@ -166,7 +166,7 @@ struct channel* treat_writeback(char *buf, struct clt* first_client, int sock, s
     printf(">> Unicast\n");
     char* pseudo = malloc(sizeof (char) * MSG_MAXLEN);
     sscanf(buf, "%s %s %s" , cmd, pseudo, msg);
-    server_rep=do_write_unicast(sock, pseudo, msg, first_client);
+    server_rep=do_write_unicast(sock, pseudo, msg, first_client, 0);
   }
 
   // create channel ------------------------------------------------

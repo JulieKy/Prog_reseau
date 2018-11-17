@@ -12,4 +12,7 @@ char* readline(int);
 
 void  do_write(char*, int);
 
-int do_read(int);
+char* do_read(int, int in);
+
+/* -------------- Answer a yes/no question -------------- */
+char* answer_send_file(int sock, int in);

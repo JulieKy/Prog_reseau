@@ -97,13 +97,50 @@ void do_write(char* msg, int sock){
 
 
 /* -------------- Read a message from the server -------------- */
-int do_read(int sock){
+char* do_read(int sock, int in){
+
   char* bufc = malloc(sizeof (char) * MSG_MAXLEN);
+  char* mot1 = malloc(sizeof (char) * MSG_MAXLEN);
+  char* mot2 = malloc(sizeof (char) * MSG_MAXLEN);
+  char* rep = malloc(sizeof (char) * MSG_MAXLEN);
+
   bzero(bufc,MSG_MAXLEN);
   read(sock,bufc, MSG_MAXLEN);
-  printf("%s\n", bufc);
+
+  // Too many clients connected
   if (strcmp(bufc,"Server cannot accept incoming connections anymore. Try again")==0){
-    return 1;
+    printf("%s\n", bufc);
+    return "too many clients";
   }
-  return 0;
+
+  // If received question send file, then need to answer y or n
+  sscanf(bufc, "%s %s", mot1, mot2);
+  if ((strcmp(mot1,"[Server]>")==0)&&(strcmp(mot2,"?")==0)) {
+    printf("%s", bufc);  // Enlever le point d'interrogation !!
+    char* rep=readline(in);
+    if ((strcmp(rep,"y\n")!=0)&&(strcmp(rep,"n\n")!=0)) {
+      rep=answer_send_file(sock, in);
+    }
+    return rep;
+  }
+
+  printf("%s\n", bufc);
+  return "simple_read";
+}
+
+/* -------------- Answer a yes/no question -------------- */
+char* answer_send_file(int sock, int in){
+
+  char* rep = malloc(sizeof (char) * MSG_MAXLEN);
+
+  do {
+
+    printf("[Server]> [y/n] is required\n");
+    bzero(rep,MSG_MAXLEN);
+    rep=readline(in);
+
+  } while ((strcmp(rep,"y\n")!=0)&&(strcmp(rep,"n\n")!=0));
+
+  return rep;
+
 }

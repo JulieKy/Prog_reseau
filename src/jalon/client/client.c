@@ -47,7 +47,7 @@ int main(int argc,char** argv)
     fds[1].events = POLLIN;
 
     send_first_pseudo(sock);
-    do_read(sock);
+    do_read(sock, fds[0].fd);
 
     for (;;) {
       // Nombre de socket en activité
@@ -68,11 +68,16 @@ int main(int argc,char** argv)
 
       if(fds[1].revents == POLLIN) {
         // Read a message and check that there aren't too many users
-        int too_clients=do_read(fds[1].fd);
-        if (too_clients==1) {
+        char* read=do_read(fds[1].fd, fds[0].fd);
+        if (strcmp(read, "too many clients")==0) {
           break;
         }
-        if
+        if (strcmp(read, "y\n")==0) {
+          // Création d'une socket d'écoute
+        }
+        if (strcmp(read, "n\n")==0) {
+          // Répondre n au C2 (en passant par serveur)
+        }
       }
     }
     printf("=== Socket closed === \n");

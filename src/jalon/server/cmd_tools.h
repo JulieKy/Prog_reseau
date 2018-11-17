@@ -38,7 +38,7 @@ char* who_channels(struct channel* list_channel, char * msg, struct clt* list_cl
 void do_write_broadcast(int sock, char* msg, struct clt* first_client);
 
 /* -------------- Write a unicast message -------------- */
-char* do_write_unicast(int sock_sender, char* pseudo_rcv, char* msg, struct clt* first_client);
+char* do_write_unicast(int sock_sender, char* pseudo_rcv, char* msg, struct clt* first_client, int test_send);
 
 /* -------------- Write a multicast message -------------- */
 void do_write_multicast(struct clt* first_client, struct clt* client, char* msg, struct channel* first_channel);

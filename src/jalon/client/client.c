@@ -73,10 +73,29 @@ int main(int argc,char** argv)
           break;
         }
         if (strcmp(read, "y\n")==0) {
-          // Création d'une socket d'écoute
+      /*    // Création d'une socket d'écoute
+          int sock=do_socket();
+          struct sockaddr_in saddr_in = init_serv_addr(port);
+          do_bind(sock, saddr_in);
+          do_listen(sock, saddr_in);
+
+          // Récupération du numéro de port de la socket
+          socklen_t len = sizeof(struct sockaddr_in);
+          getsockname(fd, (struct sockaddr *) saddr_in, &len);
+          port = ntohs(saddr_in->sin_port);
+          *serv_port = port;
+
+          // Récupération de l'adresse IP
+          int IP=inet_ntoa(saddr_in->sin_addr); */
         }
+
+
         if (strcmp(read, "n\n")==0) {
-          // Répondre n au C2 (en passant par serveur)
+          //char* msg = malloc(sizeof (char) * 60);
+          //sprintf(msg,"/send no %d",sock);
+          char* msg="/send no";
+          do_write(msg, fds[1].fd);
+          //free(msg);
         }
       }
     }

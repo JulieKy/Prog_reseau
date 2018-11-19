@@ -182,9 +182,7 @@ char* do_write_unicast(int sock, char* pseudo, char* msg, struct clt* first_clie
     char* rep= malloc(sizeof (char) * MSG_MAXLEN);
 
     // Find the receiver
-    printf("je cherche\n");
     struct clt* rcver=client_find_pseudo(first_client, pseudo);
-    printf("j'ai trouvé\n");
 
     if (rcver==NULL){
       rep = "This user doesn't exist.";

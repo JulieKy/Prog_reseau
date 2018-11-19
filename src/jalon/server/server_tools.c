@@ -207,15 +207,12 @@ struct channel* treat_writeback(char *buf, struct clt* first_client, int sock, s
 
     // If receiver don't want the file transfer
     if (strcmp("no", msg) == 0) {
-      printf("je suis dans le no send\n");
-      // int sock_rcv=atoi(mot2);
-      // printf("aaa\n");
-      struct clt* rcv= client_find_sock(first_client, sock); // PAS BON, PAS NOTRE SOCK MAIS CELLE DE L'AUTRE !
-      printf("bbb\n");
+      struct clt* rcv= client_find_pseudo(first_client, mot2); // PAS BON, PAS NOTRE SOCK MAIS CELLE DE L'AUTRE !
       printf("client psd=%s\n", rcv->psd);
       char* msg = malloc(sizeof (char) * MSG_MAXLEN);
-      sprintf(msg, "%s cancelled file transfer", rcv->psd);
-      do_write_unicast(sock, msg, msg, first_client, 0);
+      struct clt* sender=client_find_sock(first_client, sock);
+      sprintf(msg, "%s cancelled file transfer", sender->psd);
+      do_write_unicast(sock, rcv->psd, msg, first_client, 1);
     }
 
     // If a user want to send a file

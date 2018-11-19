@@ -102,7 +102,9 @@ char* do_read(int sock, int in){
   char* bufc = malloc(sizeof (char) * MSG_MAXLEN);
   char* mot1 = malloc(sizeof (char) * MSG_MAXLEN);
   char* mot2 = malloc(sizeof (char) * MSG_MAXLEN);
+  char* psd_sender= malloc(sizeof (char) * MSG_MAXLEN);
   char* rep = malloc(sizeof (char) * MSG_MAXLEN);
+  char* rep2 = malloc(sizeof (char) * MSG_MAXLEN);
 
   bzero(bufc,MSG_MAXLEN);
   read(sock,bufc, MSG_MAXLEN);
@@ -116,11 +118,16 @@ char* do_read(int sock, int in){
   // If received question send file, then need to answer y or n
   sscanf(bufc, "%s %s", mot1, mot2);
   if ((strcmp(mot1,"[Server]>")==0)&&(strcmp(mot2,"?")==0)) {
+    sscanf(bufc, "%s %s %s", mot1, mot2, psd_sender);
     printf("%s", bufc);  // Enlever le point d'interrogation !!
-    char* rep=readline(in);
-    if ((strcmp(rep,"y\n")!=0)&&(strcmp(rep,"n\n")!=0)) {
-      rep=answer_send_file(sock, in);
+
+    char* rep2=readline(in);
+
+    if ((strcmp(rep2,"y\n")!=0)&&(strcmp(rep2,"n\n")!=0)) {
+      rep2=answer_send_file(sock, in);
     }
+    sprintf(rep, "%s %s", rep2, psd_sender);
+
     return rep;
   }
 

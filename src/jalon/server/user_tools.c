@@ -53,7 +53,6 @@ struct clt* client_find_sock(struct clt* first_client, int sock){
   struct clt* found_client=first_client;
   while (found_client!=NULL && found_client->sockfd!=sock){
     found_client=found_client->next;
-    printf("find client\n");
   }
   return found_client;
 }
@@ -82,7 +81,7 @@ struct clt* client_find_pseudo(struct clt* first_client, char* pseudo){
     return temp;
 
   while (temp!=NULL){
-    if (strcmp(pseudo, temp->psd)==0) 
+    if (strcmp(pseudo, temp->psd)==0)
       return temp;
     temp=temp->next;
   }

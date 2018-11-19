@@ -72,7 +72,10 @@ int main(int argc,char** argv)
         if (strcmp(read, "too many clients")==0) {
           break;
         }
-        if (strcmp(read, "y\n")==0) {
+        char* psd_sender= malloc(sizeof (char) * 60);
+        char* rep = malloc(sizeof (char) * 60);
+        sscanf(read, "%s %s", rep, psd_sender);
+        if (strcmp(rep, "y\n")==0) {
       /*    // Création d'une socket d'écoute
           int sock=do_socket();
           struct sockaddr_in saddr_in = init_serv_addr(port);
@@ -90,13 +93,14 @@ int main(int argc,char** argv)
         }
 
 
-        if (strcmp(read, "n\n")==0) {
-          //char* msg = malloc(sizeof (char) * 60);
-          //sprintf(msg,"/send no %d",sock);
-          char* msg="/send no";
+        if (strcmp(rep, "n")==0) {
+          char* msg = malloc(sizeof (char) * 60);
+          sprintf(msg,"/send no %s",psd_sender);
           do_write(msg, fds[1].fd);
-          //free(msg);
+          free(msg);
         }
+        free(rep);
+        free(psd_sender);
       }
     }
     printf("=== Socket closed === \n");

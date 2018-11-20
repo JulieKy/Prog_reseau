@@ -51,6 +51,61 @@ void do_connect (struct sockaddr_in sock_host, int sock){
   printf("Connecting to server ... done!\n\n");
 }
 
+
+/* -------------- Perform the binding  -------------- */
+void do_bind(int sock, struct sockaddr_in saddr_in){
+  int i_bind = bind (sock, (struct sockaddr*)&saddr_in, sizeof(saddr_in));
+  if (i_bind == -1){
+      perror("bind");
+      exit(EXIT_FAILURE);
+    }
+  }
+
+
+  /* -------------- Listen  -------------- */
+  void do_listen(int sock, struct sockaddr_in saddr_in){
+    int i_listen=listen(sock,20);
+    if (i_listen == -1) {
+      perror("listen");
+      exit(EXIT_FAILURE);
+    }
+  }
+
+  /* -------------- Accept connection -------------- */
+  int do_accept(struct sockaddr_in saddr_in, int sock) {
+    socklen_t length = sizeof(saddr_in);
+    socklen_t* addrlen = &length;
+    int new_sock=accept(sock, (struct sockaddr*)&saddr_in, addrlen); // Surement pas les bons paramètres (il faut mettre ceux clients)
+    if (new_sock < 0){
+      perror("accept");
+      exit(EXIT_FAILURE);
+    }
+    return new_sock;
+  }
+
+// /* -------------- Create listenning socket -------------- */
+// int create_listenning_socket(int sock, char* serv_addr, struct pollfd fds[3]) {
+//
+//   // Création d'une socket d'écoute
+//     int sockfd=do_socket();
+//     int port=0;
+//     struct sockaddr_in saddr_in = init_serv_addr(serv_addr,port);
+//     do_bind(sock, saddr_in);
+//
+//     // Récupération du numéro de port de la socket
+//     socklen_t len = sizeof(struct sockaddr_in);
+//     getsockname(fd, (struct sockaddr *) saddr_in, &len);
+//     port = ntohs(saddr_in->sin_port);
+//
+//     // Acceptation
+//     do_listen(sock, saddr_in);
+//     int new_sock=do_accept(&saddr_in,sock);
+//     printf(">> Le numéro de socket du nouveau client est : %d\n", new_sock);
+//
+//     return new_sock;
+// }
+
+
 /* -------------- Send the first pseudo to the server -------------- */
 void send_first_pseudo(int sock){
 
@@ -150,4 +205,14 @@ char* answer_send_file(int sock, int in){
 
   return rep;
 
+}
+
+
+/* -------------- Answer no (receiving file) -------------- */
+void file_answer_no(char* psd_sender, int fd) {
+
+  char* msg = malloc(sizeof (char) * 60);
+  sprintf(msg,"/send no %s",psd_sender);
+  do_write(msg, fd);
+  free(msg);
 }

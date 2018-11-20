@@ -67,38 +67,47 @@ int main(int argc,char** argv)
       }
 
       if(fds[1].revents == POLLIN) {
+
         // Read a message and check that there aren't too many users
         char* read=do_read(fds[1].fd, fds[0].fd);
+
+        // If there are too many clients -------------------------------
         if (strcmp(read, "too many clients")==0) {
           break;
         }
+        printf("aaaa\n");
         char* psd_sender= malloc(sizeof (char) * 60);
         char* rep = malloc(sizeof (char) * 60);
         sscanf(read, "%s %s", rep, psd_sender);
-        if (strcmp(rep, "y\n")==0) {
-      /*    // Création d'une socket d'écoute
-          int sock=do_socket();
-          struct sockaddr_in saddr_in = init_serv_addr(port);
-          do_bind(sock, saddr_in);
-          do_listen(sock, saddr_in);
+        printf("aaaaaaaaaaaaaaaa\n");
+        printf("rep=%s\n", rep);
 
-          // Récupération du numéro de port de la socket
-          socklen_t len = sizeof(struct sockaddr_in);
-          getsockname(fd, (struct sockaddr *) saddr_in, &len);
-          port = ntohs(saddr_in->sin_port);
-          *serv_port = port;
+        // If the client wants to receive a file ------------------------
+        if (strcmp(rep, "y")==0) {
+          printf("je suis dans le yes\n");
+          //int sock=create_listenning_socket(sock, sv_addr, fds);
+          // Création d'une socket d'écoute
+            int sockfd=do_socket();
+            int port=12345;
+            struct sockaddr_in saddr_in = init_host_addr(sv_addr,port);
+            do_bind(sockfd, saddr_in);
 
-          // Récupération de l'adresse IP
-          int IP=inet_ntoa(saddr_in->sin_addr); */
+            // Récupération du numéro de port de la socket
+            /*socklen_t len = sizeof(struct sockaddr_in);
+            getsockname(fds, (struct sockaddr *) saddr_in, &len);
+            port = ntohs(saddr_in->sin_port);*/
+
+            // Acceptation
+            do_listen(sockfd, saddr_in);
+            int new_sock=do_accept(saddr_in,sockfd);
+            printf(">> Le numéro de socket du nouveau client est : %d\n", new_sock);
         }
 
-
+        // If the client don't want to receive a file ---------------------
         if (strcmp(rep, "n")==0) {
-          char* msg = malloc(sizeof (char) * 60);
-          sprintf(msg,"/send no %s",psd_sender);
-          do_write(msg, fds[1].fd);
-          free(msg);
+          file_answer_no(psd_sender, fds[1].fd);
         }
+
         free(rep);
         free(psd_sender);
       }

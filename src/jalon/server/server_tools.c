@@ -207,7 +207,7 @@ struct channel* treat_writeback(char *buf, struct clt* first_client, int sock, s
 
     // If receiver don't want the file transfer
     if (strcmp("no", msg) == 0) {
-      struct clt* rcv= client_find_pseudo(first_client, mot2); // PAS BON, PAS NOTRE SOCK MAIS CELLE DE L'AUTRE !
+      struct clt* rcv= client_find_pseudo(first_client, mot2); 
       printf("client psd=%s\n", rcv->psd);
       char* msg = malloc(sizeof (char) * MSG_MAXLEN);
       struct clt* sender=client_find_sock(first_client, sock);

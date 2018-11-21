@@ -83,6 +83,7 @@ int main(int argc,char** argv)
           int port_sockl=12245;
           file_answer(mot2, fds[1].fd, "yes", port_sockl);
           int sock_rcv=create_listenning_socket(sv_addr, port_sockl);
+          printf("sockrcv=%d\n", sock_rcv);
           receive_file(sock_rcv);
         }
 

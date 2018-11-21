@@ -312,6 +312,7 @@ void send_file(int sock, char* file_path) {
 
 /* -------------- C2 receive file -------------- */
 void receive_file(int sock) {
+  printf("sock fonction = %d\n", sock);
 
   char* buf= malloc(sizeof (char) * BUFSIZE_FILE);
 
@@ -332,7 +333,8 @@ void receive_file(int sock) {
   else {
 
     // Get the size of the file
-    int r= read(sock, &file_size,  sizeof(int));
+    //printf("size int : %d\n", sizeof(int));
+    int r= read(sock, &file_size,  4);
     printf("r= %d\n", r);
     printf("Taille du message recu (theorique) : %d \n", file_size);
     fflush(stdout);

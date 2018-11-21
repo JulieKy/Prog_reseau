@@ -44,3 +44,6 @@ void file_answer(char* psd_sender, int fd, char* rep, int port);
 
 /* -------------- C1 send file -------------- */
 void send_file(int sock, char* file_path);
+
+/* -------------- C2 receive file -------------- */
+void receive_file(int sock);

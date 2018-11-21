@@ -280,7 +280,8 @@ void send_file(int sock, char* file_path) {
 
 
   	 // Sending size file
-  	 write(sock,&size_file,sizeof(int));
+  	 int w = write(sock,&size_file,sizeof(int));
+     printf("ecrit : %d", w);
 
      int sent = 0;
      int res_read=0;
@@ -312,6 +313,54 @@ void send_file(int sock, char* file_path) {
 /* -------------- C2 receive file -------------- */
 void receive_file(int sock) {
 
-  
+  char* buf= malloc(sizeof (char) * BUFSIZE_FILE);
+
+  int file_size = 0;
+  int tot_rcv = 0;
+  int res_read = 0;
+
+  printf("Reading...\n");
+  fflush(stdout);
+
+  // Openning file
+  int fd;
+   if ((fd=open("/home/julie/Documents/Prog_reseau/src/jalon/test_file_rcv.txt",O_WRONLY | O_CREAT | O_TRUNC,0666)) == -1) {
+     perror("Opening file");
+     exit(1);
+   }
+
+  else {
+
+    // Get the size of the file
+    int r= read(sock, &file_size,  sizeof(int));
+    printf("r= %d\n", r);
+    printf("Taille du message recu (theorique) : %d \n", file_size);
+    fflush(stdout);
+
+    while(tot_rcv < file_size ){
+
+      // Read file and write in the socket
+      if((res_read=read(sock ,buf, BUFSIZE_FILE)) < 0) {
+      perror("read");
+      exit(1);
+      }
+
+      tot_rcv += res_read;
+
+      if (write(fd, buf, res_read) != res_read){
+      perror("write");
+      exit(1);
+      }
+    }
+
+    if(file_size > tot_rcv){
+      printf("Incomplete file\n");
+      fflush(stdout);
+    }
+
+    free(buf);
+    // Closing file
+    close(fd);
+  }
 
 }

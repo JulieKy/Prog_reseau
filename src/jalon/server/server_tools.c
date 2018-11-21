@@ -212,12 +212,10 @@ struct channel* treat_writeback(char *buf, struct clt* first_client, int sock, s
       struct clt* sender=client_find_sock(first_client, sock);
 
       if (strcmp("no", msg) == 0) {
-        printf("je suis dans le no\n");
         sprintf(msg2, "%s cancelled file transfer", sender->psd);
       }
 
       else {
-        printf("je suis dans le yes\n");
 
         char* port = malloc(sizeof (char) * MSG_MAXLEN);
         sscanf(buf, "%s %s %s %s" , cmd,mot1, mot2, port);

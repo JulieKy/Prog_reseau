@@ -82,7 +82,7 @@ int main(int argc,char** argv)
         if (strcmp(rep, "y")==0) { //mot2=psd_sender
           int port_sockl=12245;
           file_answer(mot2, fds[1].fd, "yes", port_sockl);
-          int sock_file=create_listenning_socket(sv_addr, port_sockl);
+          int sock_rcv=create_listenning_socket(sv_addr, port_sockl);
         }
 
         // If the client don't want to receive a file ---------------------
@@ -94,8 +94,8 @@ int main(int argc,char** argv)
         // Creation of the emission file socket
         if (strcmp(rep, "socket_C2")==0) { //mot2=port
           int port_P2P=atoi(mot2);
-          create_socket(sv_addr, port_P2P, 2);
-
+          int sock_sender=create_socket(sv_addr, port_P2P, 2);
+          send_file(sock_sender, "/home/julie/Documents/Prog_reseau/src/jalon/test_file.txt");
         }
 
         free(rep);

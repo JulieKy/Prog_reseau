@@ -41,3 +41,6 @@ int create_listenning_socket(char* sv_addr, int port);
 
 /* -------- Answer no (receiving file) ------------ */
 void file_answer(char* psd_sender, int fd, char* rep, int port);
+
+/* -------------- C1 send file -------------- */
+void send_file(int sock, char* file_path);

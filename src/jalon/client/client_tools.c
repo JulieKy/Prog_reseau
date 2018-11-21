@@ -10,9 +10,13 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#include <sys/stat.h>
+#include <fcntl.h>
+
 #include "client_tools.h"
 
 #define MSG_MAXLEN 200
+#define BUFSIZE_FILE 1024
 
 
 /* -------------- Get the socket -------------- */
@@ -91,10 +95,10 @@ int create_listenning_socket(char* sv_addr, int port) {
   do_bind(sock_C1, saddr_in);
 
   // Acceptation
-  printf("listenning...\n");
+  printf(">> Listenning...\n");
   do_listen(sock_C1, saddr_in);
   int new_sock=do_accept(saddr_in,sock_C1);
-  printf(">> La sockfd du client qui va nous envoyer le fichier est: %d\n", new_sock);
+  printf(">> Socket created\n");
 
   return sock_C1;
 
@@ -252,4 +256,62 @@ void file_answer(char* psd_sender, int fd, char* rep, int port) {
 
   do_write(msg, fd);
   free(msg);
+}
+
+/* -------------- C1 send file -------------- */
+void send_file(int sock, char* file_path) {
+
+   char* buf= malloc(sizeof (char) * BUFSIZE_FILE);
+
+  // Openning file
+  int fd;
+   if ((fd=open(file_path,O_RDONLY)) == -1) {
+     perror("Openning file");
+     exit(1);
+   }
+
+   else{
+
+  	 // Size file
+     struct stat infos;
+  	 fstat(fd,&infos);
+  	 int size_file = infos.st_size;
+  	 printf("Taille totale du fichier transmis: %d \n",size_file);
+
+
+  	 // Sending size file
+  	 write(sock,&size_file,sizeof(int));
+
+     int sent = 0;
+     int res_read=0;
+     int res_write;
+
+     // Read file and write in the socket
+  	 while (sent < size_file ) {
+
+  	   if ((res_read=read(fd,buf,BUFSIZE_FILE)) < 0) {
+  	     perror("Read");
+         exit(1);
+  	   }
+
+  	   sent += res_read;
+
+  	   if ((res_write = write(sock, buf, res_read)) != res_read){
+  	     perror("write in socket");
+         exit(1);
+  	   }
+  	 }
+
+     free(buf);
+
+  	 // Close file
+  	 close(fd);
+  }
+}
+
+/* -------------- C2 receive file -------------- */
+void receive_file(int sock) {
+
+  
+
 }

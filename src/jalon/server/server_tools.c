@@ -205,14 +205,31 @@ struct channel* treat_writeback(char *buf, struct clt* first_client, int sock, s
     char* mot2 = malloc(sizeof (char) * MSG_MAXLEN);
     sscanf(buf, "%s %s %s" , cmd,mot1, mot2);
 
-    // If receiver don't want the file transfer
-    if (strcmp("no", msg) == 0) {
-      struct clt* rcv= client_find_pseudo(first_client, mot2); 
-      printf("client psd=%s\n", rcv->psd);
-      char* msg = malloc(sizeof (char) * MSG_MAXLEN);
+    // If receiver respond for the  file transfer
+    if ((strcmp("no", msg) == 0) || (strcmp("yes", msg) == 0)) {
+      struct clt* rcv= client_find_pseudo(first_client, mot2);
+      char* msg2 = malloc(sizeof (char) * MSG_MAXLEN);
       struct clt* sender=client_find_sock(first_client, sock);
-      sprintf(msg, "%s cancelled file transfer", sender->psd);
-      do_write_unicast(sock, rcv->psd, msg, first_client, 1);
+
+      if (strcmp("no", msg) == 0) {
+        printf("je suis dans le no\n");
+        sprintf(msg2, "%s cancelled file transfer", sender->psd);
+      }
+
+      else {
+        printf("je suis dans le yes\n");
+
+        char* port = malloc(sizeof (char) * MSG_MAXLEN);
+        sscanf(buf, "%s %s %s %s" , cmd,mot1, mot2, port);
+
+        char* msg_create_sock_file= malloc(sizeof (char) * MSG_MAXLEN);
+        sprintf(msg_create_sock_file, " create_sock_file %s", port);
+        do_write_unicast(sock, rcv->psd, msg_create_sock_file, first_client, 1);
+
+        sprintf(msg2, "%s accepted file transfer", sender->psd);
+      }
+
+      do_write_unicast(sock, rcv->psd, msg2, first_client, 1);
     }
 
     // If a user want to send a file

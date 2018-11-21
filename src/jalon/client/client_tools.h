@@ -35,7 +35,7 @@ char* do_read(int, int in);
 char* answer_send_file(int sock, int in);
 
 /* -------------- Create a listenning socket -------------- */
-//int create_listenning_socket(int sock, char* serv_addr, struct pollfd fds[3]);
+int create_listenning_socket(char* sv_addr, int port);
 
 /* -------- Answer no (receiving file) ------------ */
-void file_answer_no(char* psd_sender, int fd);
+void file_answer(char* psd_sender, int fd, char* rep, int port);

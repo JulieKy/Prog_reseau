@@ -83,27 +83,21 @@ void do_bind(int sock, struct sockaddr_in saddr_in){
     return new_sock;
   }
 
-// /* -------------- Create listenning socket -------------- */
-// int create_listenning_socket(int sock, char* serv_addr, struct pollfd fds[3]) {
-//
-//   // Création d'une socket d'écoute
-//     int sockfd=do_socket();
-//     int port=0;
-//     struct sockaddr_in saddr_in = init_serv_addr(serv_addr,port);
-//     do_bind(sock, saddr_in);
-//
-//     // Récupération du numéro de port de la socket
-//     socklen_t len = sizeof(struct sockaddr_in);
-//     getsockname(fd, (struct sockaddr *) saddr_in, &len);
-//     port = ntohs(saddr_in->sin_port);
-//
-//     // Acceptation
-//     do_listen(sock, saddr_in);
-//     int new_sock=do_accept(&saddr_in,sock);
-//     printf(">> Le numéro de socket du nouveau client est : %d\n", new_sock);
-//
-//     return new_sock;
-// }
+/* -------------- Create listenning socket -------------- */
+int create_listenning_socket(char* sv_addr, int port) {
+// Création d'une socket d'écoute
+  int sockfd=do_socket();
+  struct sockaddr_in saddr_in = init_host_addr(sv_addr,port);
+  do_bind(sockfd, saddr_in);
+
+  // Acceptation
+  printf("listenning...\n");
+  do_listen(sockfd, saddr_in);
+  int new_sock=do_accept(saddr_in,sockfd);
+  printf(">> La sockfd du client qui va nous envoyer le fichier est: %d\n", new_sock);
+
+  return sockfd;
+}
 
 
 /* -------------- Send the first pseudo to the server -------------- */
@@ -157,23 +151,24 @@ char* do_read(int sock, int in){
   char* bufc = malloc(sizeof (char) * MSG_MAXLEN);
   char* mot1 = malloc(sizeof (char) * MSG_MAXLEN);
   char* mot2 = malloc(sizeof (char) * MSG_MAXLEN);
-  char* psd_sender= malloc(sizeof (char) * MSG_MAXLEN);
+  char* mot3= malloc(sizeof (char) * MSG_MAXLEN);
   char* rep = malloc(sizeof (char) * MSG_MAXLEN);
   char* rep2 = malloc(sizeof (char) * MSG_MAXLEN);
 
   bzero(bufc,MSG_MAXLEN);
   read(sock,bufc, MSG_MAXLEN);
 
-  // Too many clients connected
+  // Too many clients connected ------------------------------------------------------------
   if (strcmp(bufc,"Server cannot accept incoming connections anymore. Try again")==0){
     printf("%s\n", bufc);
     return "too many clients";
   }
 
-  // If received question send file, then need to answer y or n
+  // If received question send file, then need to answer y or n ----------------------------
   sscanf(bufc, "%s %s", mot1, mot2);
   if ((strcmp(mot1,"[Server]>")==0)&&(strcmp(mot2,"?")==0)) {
-    sscanf(bufc, "%s %s %s", mot1, mot2, psd_sender);
+    sscanf(bufc, "%s %s %s", mot1, mot2, mot3);
+
     printf("%s", bufc);  // Enlever le point d'interrogation !!
 
     char* rep2=readline(in);
@@ -181,9 +176,27 @@ char* do_read(int sock, int in){
     if ((strcmp(rep2,"y\n")!=0)&&(strcmp(rep2,"n\n")!=0)) {
       rep2=answer_send_file(sock, in);
     }
-    sprintf(rep, "%s %s", rep2, psd_sender);
+    sprintf(rep, "%s %s", rep2, mot3);
 
     return rep;
+  }
+
+  // Message d'acceptation du transfert de fichier -----------------------------------------
+  if ((strcmp(mot1,"[Server]>")==0)&&(strcmp(mot2,"accepted")==0)) {
+    sprintf(rep, "%s %s", rep2, mot3);
+
+    return rep;
+  }
+
+  // Création d'un socket pour envoyer un fichier à un autre client -------------------------
+  if ((strcmp(mot1,"[Server]>")==0)&&(strcmp(mot2,"create_sock_file")==0)) {
+    sscanf(bufc, "%s %s %s", mot1, mot2, mot3);
+    int port=atoi(mot3);
+    printf("j'ai recuperer le num de port !! = %d\n", port);
+    rep="socket_c2";
+    
+    return rep;
+    // création de la socket !! ///
   }
 
   printf("%s\n", bufc);
@@ -207,12 +220,19 @@ char* answer_send_file(int sock, int in){
 
 }
 
-
 /* -------------- Answer no (receiving file) -------------- */
-void file_answer_no(char* psd_sender, int fd) {
+void file_answer(char* psd_sender, int fd, char* rep, int port) {
 
   char* msg = malloc(sizeof (char) * 60);
-  sprintf(msg,"/send no %s",psd_sender);
+
+  if (strcmp(rep, "no")==0) {
+    sprintf(msg,"/send no %s",psd_sender);
+  }
+
+  if (strcmp(rep, "yes")==0) {
+    sprintf(msg,"/send yes %s %d",psd_sender, port);
+  }
+
   do_write(msg, fd);
   free(msg);
 }

@@ -75,37 +75,22 @@ int main(int argc,char** argv)
         if (strcmp(read, "too many clients")==0) {
           break;
         }
-        printf("aaaa\n");
+
         char* psd_sender= malloc(sizeof (char) * 60);
         char* rep = malloc(sizeof (char) * 60);
         sscanf(read, "%s %s", rep, psd_sender);
-        printf("aaaaaaaaaaaaaaaa\n");
-        printf("rep=%s\n", rep);
 
         // If the client wants to receive a file ------------------------
         if (strcmp(rep, "y")==0) {
-          printf("je suis dans le yes\n");
-          //int sock=create_listenning_socket(sock, sv_addr, fds);
-          // Création d'une socket d'écoute
-            int sockfd=do_socket();
-            int port=12345;
-            struct sockaddr_in saddr_in = init_host_addr(sv_addr,port);
-            do_bind(sockfd, saddr_in);
-
-            // Récupération du numéro de port de la socket
-            /*socklen_t len = sizeof(struct sockaddr_in);
-            getsockname(fds, (struct sockaddr *) saddr_in, &len);
-            port = ntohs(saddr_in->sin_port);*/
-
-            // Acceptation
-            do_listen(sockfd, saddr_in);
-            int new_sock=do_accept(saddr_in,sockfd);
-            printf(">> Le numéro de socket du nouveau client est : %d\n", new_sock);
+          int port_sockl=12245;
+          file_answer(psd_sender, fds[1].fd, "yes", port_sockl);
+          int sock_file=create_listenning_socket(sv_addr, port_sockl);
         }
 
         // If the client don't want to receive a file ---------------------
         if (strcmp(rep, "n")==0) {
-          file_answer_no(psd_sender, fds[1].fd);
+          int pt_no=0;
+          file_answer(psd_sender, fds[1].fd, "no", pt_no);
         }
 
         free(rep);

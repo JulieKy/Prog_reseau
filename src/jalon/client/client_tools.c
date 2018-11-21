@@ -48,7 +48,6 @@ void do_connect (struct sockaddr_in sock_host, int sock){
     perror("connection");
     exit(EXIT_FAILURE);
   }
-  printf("Connecting to server ... done!\n\n");
 }
 
 
@@ -85,18 +84,39 @@ void do_bind(int sock, struct sockaddr_in saddr_in){
 
 /* -------------- Create listenning socket -------------- */
 int create_listenning_socket(char* sv_addr, int port) {
-// Création d'une socket d'écoute
-  int sockfd=do_socket();
+
+  // Création d'une socket d'écoute
+  int sock_C1=do_socket();
   struct sockaddr_in saddr_in = init_host_addr(sv_addr,port);
-  do_bind(sockfd, saddr_in);
+  do_bind(sock_C1, saddr_in);
 
   // Acceptation
   printf("listenning...\n");
-  do_listen(sockfd, saddr_in);
-  int new_sock=do_accept(saddr_in,sockfd);
+  do_listen(sock_C1, saddr_in);
+  int new_sock=do_accept(saddr_in,sock_C1);
   printf(">> La sockfd du client qui va nous envoyer le fichier est: %d\n", new_sock);
 
-  return sockfd;
+  return sock_C1;
+
+}
+
+/* -------------- Create socket -------------- */
+int create_socket(char* sv_addr, int port, int test_con_servclt) {
+
+  // Création d'une socket
+  int sock_C2=do_socket();
+  struct sockaddr_in saddr_in = init_host_addr(sv_addr,port);
+
+  // Connection
+  do_connect(saddr_in, sock_C2);
+
+  if (test_con_servclt==1) {
+    printf("Connecting to server ... done!\n\n");
+  }
+  else
+    printf("Connecting to the user sender ... done!\n\n");
+
+  return sock_C2;
 }
 
 
@@ -183,20 +203,17 @@ char* do_read(int sock, int in){
 
   // Message d'acceptation du transfert de fichier -----------------------------------------
   if ((strcmp(mot1,"[Server]>")==0)&&(strcmp(mot2,"accepted")==0)) {
-    sprintf(rep, "%s %s", rep2, mot3);
+    sprintf(rep, "%s %s", rep2, mot3); //mot3 est le psd_sender
 
     return rep;
   }
 
   // Création d'un socket pour envoyer un fichier à un autre client -------------------------
   if ((strcmp(mot1,"[Server]>")==0)&&(strcmp(mot2,"create_sock_file")==0)) {
-    sscanf(bufc, "%s %s %s", mot1, mot2, mot3);
-    int port=atoi(mot3);
-    printf("j'ai recuperer le num de port !! = %d\n", port);
-    rep="socket_c2";
-    
+    sscanf(bufc, "%s %s %s", mot1, mot2, mot3); // mot3 est le port
+    sprintf(rep, "socket_C2 %s", mot3);
     return rep;
-    // création de la socket !! ///
+
   }
 
   printf("%s\n", bufc);

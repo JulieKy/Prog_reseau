@@ -18,7 +18,6 @@ void do_listen(int sock, struct sockaddr_in saddr_in);
 /* -------------- Accept connection -------------- */
 int do_accept(struct sockaddr_in saddr_in, int sock);
 
-
 /* -------------- Ask the pseudo ------------------- */
 void send_first_pseudo(int);
 
@@ -33,6 +32,9 @@ char* do_read(int, int in);
 
 /* --------- --- Answer a yes/no question ---------- */
 char* answer_send_file(int sock, int in);
+
+/* -------------- Create socket -------------- */
+int create_socket(char* sv_addr, int port, int test_con_servclt);
 
 /* -------------- Create a listenning socket -------------- */
 int create_listenning_socket(char* sv_addr, int port);

@@ -32,13 +32,11 @@ int main(int argc,char** argv)
     memset(fds, 0 , sizeof(fds));
 
     // Get address info from the server
-    char* sv_addr=argv[1]; // Server adress (127.0.0.1)
-    short n_port=atoi(argv[2]); // Port number
+    char* sv_addr=argv[1];
+    short n_port=atoi(argv[2]);
 
     // Socket creation and connection to the server with a pseudo
-    int sock=do_socket();
-    struct sockaddr_in sock_host=init_host_addr(sv_addr, n_port);
-    do_connect(sock_host, sock);
+    int sock=create_socket(sv_addr, n_port, 1);
 
     // Initialisation du tableau avec la l'entrée standard et la socket
     fds[0].fd=0;
@@ -76,25 +74,32 @@ int main(int argc,char** argv)
           break;
         }
 
-        char* psd_sender= malloc(sizeof (char) * 60);
+        char* mot2= malloc(sizeof (char) * 60);
         char* rep = malloc(sizeof (char) * 60);
-        sscanf(read, "%s %s", rep, psd_sender);
+        sscanf(read, "%s %s", rep, mot2);
 
         // If the client wants to receive a file ------------------------
-        if (strcmp(rep, "y")==0) {
+        if (strcmp(rep, "y")==0) { //mot2=psd_sender
           int port_sockl=12245;
-          file_answer(psd_sender, fds[1].fd, "yes", port_sockl);
+          file_answer(mot2, fds[1].fd, "yes", port_sockl);
           int sock_file=create_listenning_socket(sv_addr, port_sockl);
         }
 
         // If the client don't want to receive a file ---------------------
         if (strcmp(rep, "n")==0) {
           int pt_no=0;
-          file_answer(psd_sender, fds[1].fd, "no", pt_no);
+          file_answer(mot2, fds[1].fd, "no", pt_no);
+        }
+
+        // Creation of the emission file socket
+        if (strcmp(rep, "socket_C2")==0) { //mot2=port
+          int port_P2P=atoi(mot2);
+          create_socket(sv_addr, port_P2P, 2);
+
         }
 
         free(rep);
-        free(psd_sender);
+        free(mot2);
       }
     }
     printf("=== Socket closed === \n");

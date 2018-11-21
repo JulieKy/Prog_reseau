@@ -25,14 +25,12 @@ char* nick(struct clt* client, char* msg){
   char* rep = malloc(sizeof (char) * MSG_MAXLEN);
   char* rep2 = malloc(sizeof (char) * MSG_MAXLEN);
 
-  if (strlen(msg)<2) {
-    rep ="Your pseudo must be 2 letters long\n";
+  if (strlen(msg)<1) {
+    rep ="Enter your new pseudo\n";
   }
 
   else {
     client->psd=msg;
-    //strcpy(client->psd,msg);
-    printf(">> Le nouveau pseudo du client %d est : %s\n",client->sockfd, client->psd);
     rep2 = "Your new pseudo is";
     sprintf(rep, "  %s %s\n" , rep2, client->psd);
   }
@@ -304,32 +302,11 @@ char* send_file(struct clt* first_client, struct clt* client, char* user_rcv, ch
     return server_rep;
   }
 
-  // // Si mauvais chemin
-  // printf("file = %s\n", file); /*ENLEVER "" avant open ? */
-  // int ficfd;
-  // if ((ficfd=open(file, O_RDONLY))== -1){ // N'existe pas.. Probleme avec open
-  //   sprintf(rep, "File doesn't exist");
-  //   sprintf(server_rep, " [Server]> %s\n" , rep);
-  //   return server_rep;
-  // }
 
-  // Verif du nom du file et du user
-
-  // // Recupération du nom du fichier
-  // char c="";
-  // char tab[];
-  // while (strcmp(c, '\\')!=0){
-  //   c=file[strlen(file)-i];
-  //   tab[i]=c;
-  //   i++;
-  // }
-
-  file_name=file; // A changer pour avoirjuste le nom et pas tout le chemin
-  sprintf(msg, "? %s wants you to accept the transfer of the file named \"%s\". Do you accept? [y/n]", client->psd, file_name);
+  sprintf(msg, "? %s wants you to accept the transfer of the file named \"%s\". Do you accept? [y/n]", client->psd, file);
   do_write_unicast(client->sockfd, user_rcv, msg, first_client, 1);
-  // nouvelle fonction qui attend reponse et qui la renvoie
+
   if (strcmp(rep_user, "Y")==0) {
-    // Envoyer message à C1 pour création socket + envoi du fichier
     sprintf(rep, "%s accepted file transfert.", user_rcv);
   }
   else if (strcmp(rep_user, "n")==0) {
@@ -371,7 +348,7 @@ char* quit(struct clt* first_client, struct clt* client, char* msg, struct chann
 
   }
   else {
-    printf("==== Close socket ==== \n"); // Marche pas
+    printf("==== Close socket ==== \n");
   }
   server_rep=NULL;
 

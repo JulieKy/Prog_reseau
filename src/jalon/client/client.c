@@ -48,6 +48,7 @@ int main(int argc,char** argv)
     do_read(sock, fds[0].fd);
 
     for (;;) {
+
       // Nombre de socket en activité
       int n=poll(fds, nfds, timeout);
 
@@ -66,7 +67,7 @@ int main(int argc,char** argv)
 
       if(fds[1].revents == POLLIN) {
 
-        // Read a message and check that there aren't too many users
+        // Read a message and check that there aren't too many users or if the client want to send/receive a file
         char* read=do_read(fds[1].fd, fds[0].fd);
 
         // If there are too many clients -------------------------------
@@ -83,7 +84,6 @@ int main(int argc,char** argv)
           int port_sockl=12245;
           file_answer(mot2, fds[1].fd, "yes", port_sockl);
           int sock_rcv=create_listenning_socket(sv_addr, port_sockl);
-          printf("sockrcv=%d\n", sock_rcv);
           receive_file(sock_rcv);
         }
 
@@ -100,8 +100,7 @@ int main(int argc,char** argv)
           send_file(sock_sender, "/home/julie/Documents/Prog_reseau/src/jalon/test_file.txt");
         }
 
-        free(rep);
-        free(mot2);
+        free(rep); free(mot2);
       }
     }
     printf("=== Socket closed === \n");

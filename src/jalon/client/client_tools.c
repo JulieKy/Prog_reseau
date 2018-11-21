@@ -78,7 +78,7 @@ void do_bind(int sock, struct sockaddr_in saddr_in){
   int do_accept(struct sockaddr_in saddr_in, int sock) {
     socklen_t length = sizeof(saddr_in);
     socklen_t* addrlen = &length;
-    int new_sock=accept(sock, (struct sockaddr*)&saddr_in, addrlen); // Surement pas les bons paramètres (il faut mettre ceux clients)
+    int new_sock=accept(sock, (struct sockaddr*)&saddr_in, addrlen);
     if (new_sock < 0){
       perror("accept");
       exit(EXIT_FAILURE);
@@ -89,7 +89,7 @@ void do_bind(int sock, struct sockaddr_in saddr_in){
 /* -------------- Create listenning socket -------------- */
 int create_listenning_socket(char* sv_addr, int port) {
 
-  // Création d'une socket d'écoute
+  // Création
   int sock_C1=do_socket();
   struct sockaddr_in saddr_in = init_host_addr(sv_addr,port);
   do_bind(sock_C1, saddr_in);
@@ -114,6 +114,7 @@ int create_socket(char* sv_addr, int port, int test_con_servclt) {
   // Connection
   do_connect(saddr_in, sock_C2);
 
+  // Message
   if (test_con_servclt==1) {
     printf("Connecting to server ... done!\n\n");
   }
@@ -132,24 +133,28 @@ void send_first_pseudo(int sock){
 
   char cmd[MSG_MAXLEN];
   char pseudo[MSG_MAXLEN];
-  //char psd[MSG_MAXLEN];
 
+  // First test
   printf(">> Please login with /nick <yourpseudo>.\n");
   buf=readline(sock);
   sscanf(buf, "%s %s" , cmd, pseudo);
-  //send_pseudo(cmd, pseudo, sock);
 
-  while ((strcmp("/nick", cmd) != 0) || (strlen(pseudo)<2)){
-    printf("[Server] : Please logon with /nick <yourpseudo>. Pseudo size: more than 1 letter/\n\n");
+  // While no pseudo given, ask for a pseudo
+  while ((strcmp("/nick", cmd) != 0) || (strlen(pseudo)<1)){
+    printf("[Server]> Please logon with /nick <yourpseudo>\n");
     buf=readline(sock);
     sscanf(buf, "%s %s" , cmd, pseudo);
-    //sprintf(psd, "%s %s\n" , cmd, pseudo);
   }
+
+  // Write message to the server
   char cmd_pseudo[MSG_MAXLEN]= "psd";
   char* msg_con = malloc(sizeof (char) * MSG_MAXLEN);
   sprintf(msg_con, "%s %s" , cmd_pseudo, pseudo);
   write(sock,msg_con,MSG_MAXLEN);
   memset(msg_con, '\0', MSG_MAXLEN);
+
+  free(buf);
+  free(msg_con);
 }
 
 /* -------------- Get user input -------------- */
@@ -164,7 +169,6 @@ char* readline(int sock){
 /* -------------- Send message to the server -------------- */
 void do_write(char* msg, int sock){
   int sent=0, msg_intsize=strlen(msg);
-  //memset(sock, '\0', MSG_MAXLEN);
   sent= write(sock,msg,strlen(msg));
 }
 
@@ -173,9 +177,9 @@ void do_write(char* msg, int sock){
 char* do_read(int sock, int in){
 
   char* bufc = malloc(sizeof (char) * MSG_MAXLEN);
-  char* mot1 = malloc(sizeof (char) * MSG_MAXLEN);
-  char* mot2 = malloc(sizeof (char) * MSG_MAXLEN);
-  char* mot3= malloc(sizeof (char) * MSG_MAXLEN);
+  char mot1[MSG_MAXLEN];
+  char mot2[MSG_MAXLEN];
+  char mot3[MSG_MAXLEN];
   char* rep = malloc(sizeof (char) * MSG_MAXLEN);
   char* rep2 = malloc(sizeof (char) * MSG_MAXLEN);
 
@@ -188,15 +192,21 @@ char* do_read(int sock, int in){
     return "too many clients";
   }
 
-  // If received question send file, then need to answer y or n ----------------------------
   sscanf(bufc, "%s %s", mot1, mot2);
+
+  // If related to /send -------------------------------------------------------------------
+
+  // Receive demand
   if ((strcmp(mot1,"[Server]>")==0)&&(strcmp(mot2,"?")==0)) {
     sscanf(bufc, "%s %s %s", mot1, mot2, mot3);
+    sprintf(rep, "[Server]> %s", bufc+11); // For removing "?"
+    printf("%s", rep);
+    bzero(rep,MSG_MAXLEN);
 
-    printf("%s", bufc);  // Enlever le point d'interrogation !!
-
+    // Reading standard inpout
     char* rep2=readline(in);
 
+    // Answer
     if ((strcmp(rep2,"y\n")!=0)&&(strcmp(rep2,"n\n")!=0)) {
       rep2=answer_send_file(sock, in);
     }
@@ -208,7 +218,6 @@ char* do_read(int sock, int in){
   // Message d'acceptation du transfert de fichier -----------------------------------------
   if ((strcmp(mot1,"[Server]>")==0)&&(strcmp(mot2,"accepted")==0)) {
     sprintf(rep, "%s %s", rep2, mot3); //mot3 est le psd_sender
-
     return rep;
   }
 
@@ -221,13 +230,14 @@ char* do_read(int sock, int in){
   }
 
   printf("%s\n", bufc);
+  free(bufc); free(rep); free(rep2);
   return "simple_read";
 }
 
 /* -------------- Answer a yes/no question -------------- */
 char* answer_send_file(int sock, int in){
 
-  char* rep = malloc(sizeof (char) * MSG_MAXLEN);
+  char rep[MSG_MAXLEN];
 
   do {
 

@@ -85,7 +85,6 @@ int nbre_channel(struct channel* first_channel){
       temp=temp->next;
       c++;
     }
-    printf("c====%d\n", c);
     return c;
   }
 }

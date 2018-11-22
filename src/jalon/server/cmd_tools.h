@@ -50,7 +50,7 @@ char* create_channel(struct clt* client, char* msg, struct channel* first_channe
 char* join_channel(struct clt* client, char* msg, struct channel* first_channel);
 
 /* -------------- Send a file -------------- */
-char* send_file(struct clt* first_client, struct clt* client, char* user_rcv, char* file);
+char* send_file1(struct clt* first_client, struct clt* client, char* user_rcv, char* file);
 
 /* -------------- Join channel -------------- */
 char* quit(struct clt* first_client, struct clt* client, char* msg, struct channel* first_channel);

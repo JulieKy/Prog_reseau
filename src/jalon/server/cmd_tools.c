@@ -8,13 +8,13 @@
 char* first_pseudo(struct clt* client, char* msg){
 
   char* rep = malloc(sizeof (char) * MSG_MAXLEN);
-  char* rep2 = malloc(sizeof (char) * MSG_MAXLEN);
+  char rep2[MSG_MAXLEN];
 
   client->psd=msg;
-  //strcpy(client->psd,msg);
   printf(">> Le pseudo du client %d est : %s\n",client->sockfd, client->psd);
-  rep2 = "Welcome on the chat";
+  strcpy(rep2, "Welcome on the chat");
   sprintf(rep, "  %s %s\n" , rep2, client->psd);
+
   return rep;
 }
 
@@ -23,7 +23,7 @@ char* first_pseudo(struct clt* client, char* msg){
 char* nick(struct clt* client, char* msg){
 
   char* rep = malloc(sizeof (char) * MSG_MAXLEN);
-  char* rep2 = malloc(sizeof (char) * MSG_MAXLEN);
+  char rep2[MSG_MAXLEN];
 
   if (strlen(msg)<1) {
     rep ="Enter your new pseudo\n";
@@ -31,9 +31,10 @@ char* nick(struct clt* client, char* msg){
 
   else {
     client->psd=msg;
-    rep2 = "Your new pseudo is";
+    strcpy(rep2, "Your new pseudo is");
     sprintf(rep, "  %s %s\n" , rep2, client->psd);
   }
+
   return rep;
 }
 
@@ -51,7 +52,7 @@ char* who(struct clt* first_client) {
     struct clt* temp=first_client;
 
     while (temp!=NULL){
-     char* pseudo=malloc(sizeof (char) *200);
+     char pseudo[MSG_MAXLEN];
      sprintf(pseudo, "             - %s\n",temp->psd);
      strcat(list_pseudo, pseudo);
      temp=temp->next;
@@ -87,7 +88,7 @@ char* what_channels(struct channel* first_channel) {
       struct channel* temp=first_channel;
 
       while (temp!=NULL){
-       char* pseudo=malloc(sizeof (char) *200);
+       char pseudo[MSG_MAXLEN];
        sprintf(pseudo, "             - %s\n",temp->name);
        strcat(list_pseudo, pseudo);
        temp=temp->next;
@@ -97,6 +98,7 @@ char* what_channels(struct channel* first_channel) {
   else {
     list_pseudo="No channel created\n";
   }
+
 
   return list_pseudo;
 
@@ -123,7 +125,7 @@ char* who_channels(struct channel* list_channel, char * msg, struct clt* list_cl
     else {
       sprintf(list_pseudo, "Members in channel %s :\n", channel->name);
       struct clt* client_found;
-      char* pseudo=malloc(sizeof (char) *200);
+      char pseudo[MSG_MAXLEN];
 
       while (client!=NULL){
         client_found=client_find_channel(client, channel->name);
@@ -160,8 +162,8 @@ void do_write_broadcast(int sock, char* msg, struct clt* first_client){
     struct clt* sender=client_find_sock(first_client, sock);
 
     char* name=sender->psd;
-    sprintf(msg_pseudo, "[%s]: %s\n" , name, msg);
-    printf("[write broadcast] : %s\n", msg_pseudo);
+    sprintf(msg_pseudo, "[%s]> %s\n" , name, msg);
+    printf("[write broadcast]> %s\n", msg_pseudo);
     while (temp!=NULL){
       if (sock!=temp->sockfd) {
         write(temp->sockfd, msg_pseudo, MSG_MAXLEN);
@@ -174,6 +176,7 @@ void do_write_broadcast(int sock, char* msg, struct clt* first_client){
 
 /* -------------- Write a unicast message -------------- */
 char* do_write_unicast(int sock, char* pseudo, char* msg, struct clt* first_client, int test_send){
+
     // Find the receiver's pseudo and the message
     char* rcver_psd= malloc(sizeof (char) * MSG_MAXLEN);
     char* message= malloc(sizeof (char) * MSG_MAXLEN);
@@ -205,6 +208,8 @@ char* do_write_unicast(int sock, char* pseudo, char* msg, struct clt* first_clie
       write(rcver->sockfd, msg_pseudo, MSG_MAXLEN);
     }
 
+    free(rcver_psd); free(message);
+
     return rep;
 }
 
@@ -216,7 +221,7 @@ void do_write_multicast(struct clt* first_client, struct clt* client, char* msg,
 
     char* name=client->psd;
     char* msg_pseudo = malloc(sizeof (char) * MSG_MAXLEN);
-    sprintf(msg_pseudo, "[%s]: %s\n" , name, msg);
+    sprintf(msg_pseudo, "[%s]> %s\n" , name, msg);
 
     struct clt* temp=first_client;
     while (temp!=NULL){
@@ -225,6 +230,7 @@ void do_write_multicast(struct clt* first_client, struct clt* client, char* msg,
       }
     temp=temp->next;
     }
+    free(msg_pseudo);
 }
 
 
@@ -252,6 +258,8 @@ char* create_channel(struct clt* client, char* msg, struct channel* list_channel
   }
 
   sprintf(server_rep, " [Server]> %s\n" , rep);
+
+  free(rep);
 
   return server_rep;
 }
@@ -282,12 +290,15 @@ char* join_channel(struct clt* client, char* msg, struct channel* list_channel){
     rep="You need to quit the channel\n";
     sprintf(server_rep, " [%s]> %s\n" , channel->name, rep);
   }
+
+  free(rep);
+
   return server_rep;
 }
 
 
-/* -------------- Send a file  -------------- */
-char* send_file(struct clt* first_client, struct clt* client, char* user_rcv, char* file) {
+/* ------------- Deal with answer before sending a file  -------------- */
+char* send_file1(struct clt* first_client, struct clt* client, char* user_rcv, char* file) {
 
   char* rep = malloc(sizeof (char) * MSG_MAXLEN);
   char* server_rep = malloc(sizeof (char) * MSG_MAXLEN);
@@ -314,6 +325,9 @@ char* send_file(struct clt* first_client, struct clt* client, char* user_rcv, ch
   }
 
   sprintf(server_rep, " [Server]> %s\n" , rep);
+
+  free(rep); free(rep_user); free(file_name); free(msg);
+
   return server_rep;
 }
 
@@ -351,6 +365,8 @@ char* quit(struct clt* first_client, struct clt* client, char* msg, struct chann
     printf("==== Close socket ==== \n");
   }
   server_rep=NULL;
+
+  free(rep);
 
   return server_rep;
 }

@@ -7,12 +7,12 @@ void error(const char *msg)
 }
 
 
-/* -------------- Main -------------- */
+/* ------------------------ Main -------------------------- */
 int main(int argc, char** argv) {
 
   // Test nombre d'arguments
   if (argc != 2) {
-      fprintf(stderr, "usage: RE216_SERVER port\n"); // Il faut donner le port de la socket coté client ??
+      fprintf(stderr, "usage: RE216_SERVER port\n");
       return 1;
   }
 
@@ -57,7 +57,6 @@ int main(int argc, char** argv) {
     if(fds[0].revents == POLLIN) {
 
       int new_sock=do_accept(&saddr_in,sock);
-      printf(">> Le numéro de socket du nouveau client est : %d\n", new_sock);
       int nfds_test=test_nb_users(fds, nfds, sock, new_sock, saddr_in);
       if (nfds_test!=0)
         nfds=nfds_test;
@@ -83,7 +82,6 @@ int main(int argc, char** argv) {
         // read
         char* buf;
         buf=do_read(fds[i].fd);
-        //printf("[read] : %s\n", buf);
         list_channel= treat_writeback(buf, first_client, fds[i].fd, list_channel);
 
 
@@ -92,6 +90,7 @@ int main(int argc, char** argv) {
           char* channel_name = malloc(sizeof (char) * 60);
           sprintf(channel_name, "[%s]> ", client->channel);
           do_write(channel_name, fds[i].fd);
+          free(channel_name);
         }
 
         // Fermeture de la socket

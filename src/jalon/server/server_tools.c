@@ -67,9 +67,9 @@ int test_nb_users(struct pollfd* fds, int nfds, int sock, int new_sock, struct s
   else {
     char* refused = malloc(sizeof (char) * (100));
     refused="Server cannot accept incoming connections anymore. Try again later.";
-    //memset(new_sock, '\0', MSG_MAXLEN);
     write(new_sock,refused,MSG_MAXLEN);
     close(new_sock);
+    free(refused);
     return 0;
   }
 }
@@ -78,14 +78,12 @@ int test_nb_users(struct pollfd* fds, int nfds, int sock, int new_sock, struct s
 char* do_read(int new_sock){
   char* buf = malloc(sizeof (char) * MSG_MAXLEN);
   memset(buf, '\0', MSG_MAXLEN);
-  char* cmd = malloc(sizeof (char) * CMD_MAXLEN);
   read(new_sock, buf, MSG_MAXLEN);
   return buf;
   }
 
 /* -------------- We write back to the client -------------- */
 void do_write(char* buf, int new_sock){
-    //printf("[write] : %s\n", buf);
     write(new_sock,buf,MSG_MAXLEN);
 }
 
@@ -156,14 +154,12 @@ struct channel* treat_writeback(char *buf, struct clt* first_client, int sock, s
 
     // msgall ------------------------------------------------------
   else if(strcmp("/msgall", cmd) == 0) {
-    printf(">> Broadcast\n");
     do_write_broadcast(sock, msg, first_client);
     server_rep=NULL;
   }
 
     // msg ---------------------------------------------------------
   else if(strcmp("/msg", cmd) == 0) {
-    printf(">> Unicast\n");
     char* pseudo = malloc(sizeof (char) * MSG_MAXLEN);
     sscanf(buf, "%s %s %s" , cmd, pseudo, msg);
     server_rep=do_write_unicast(sock, pseudo, msg, first_client, 0);
@@ -179,7 +175,6 @@ struct channel* treat_writeback(char *buf, struct clt* first_client, int sock, s
 
       else {
         list_channel=channel_add(list_channel, msg);
-        printf("pseudo channel =%s\n", list_channel->name);
         printf(">> Number of channels : %d\n", nbre_channel(list_channel));
         sprintf(rep, "You have created channel %s\n", list_channel->name);
       }
@@ -190,7 +185,6 @@ struct channel* treat_writeback(char *buf, struct clt* first_client, int sock, s
     }
 
     sprintf(server_rep, " [Server]> %s\n" , rep);
-    //server_rep=create_channel(client, msg, list_channel);
   }
 
   // join channel ------------------------------------------------
@@ -225,15 +219,19 @@ struct channel* treat_writeback(char *buf, struct clt* first_client, int sock, s
         do_write_unicast(sock, rcv->psd, msg_create_sock_file, first_client, 1);
 
         sprintf(msg2, "%s accepted file transfer", sender->psd);
+        free(port);
       }
 
       do_write_unicast(sock, rcv->psd, msg2, first_client, 1);
+      free(msg2);
     }
 
     // If a user want to send a file
     else {
-      server_rep=send_file(first_client, client, mot1, mot2);
+      server_rep=send_file1(first_client, client, mot1, mot2);
     }
+
+  free(mot1); free(mot2);
   }
 
     // quit --------------------------------------------------------------
@@ -252,6 +250,9 @@ struct channel* treat_writeback(char *buf, struct clt* first_client, int sock, s
   // write back to the client --------------------------------------------------------------
   do_write(server_rep, sock);
 
+  free(sender); free(cmd); free(rep2); free(server_rep);
+
+
   return list_channel;
 }
 
@@ -267,5 +268,4 @@ void do_close(int sock_closed, struct clt* first_client){
   first_client=remove_client(first_client, removed_client);
   int nb_clt= nbre_client(first_client);
   printf(">>> Nombre de client connecté au serveur : %d\n",nb_clt);
-  // Supprimer la socket de la structure de tableau fds
 }

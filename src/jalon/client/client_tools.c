@@ -237,7 +237,7 @@ char* do_read(int sock, int in){
 /* -------------- Answer a yes/no question -------------- */
 char* answer_send_file(int sock, int in){
 
-  char rep[MSG_MAXLEN];
+  char* rep = malloc(sizeof (char) * MSG_MAXLEN);
 
   do {
 
@@ -343,10 +343,9 @@ void receive_file(int sock) {
   else {
 
     // Get the size of the file
-    //printf("size int : %d\n", sizeof(int));
     int r= read(sock, &file_size,  4);
     printf("r= %d\n", r);
-    printf("Taille du message recu (theorique) : %d \n", file_size);
+    printf("Msg size (th) : %d \n", file_size);
     fflush(stdout);
 
     while(tot_rcv < file_size ){

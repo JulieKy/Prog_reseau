@@ -154,15 +154,21 @@ struct channel* treat_writeback(char *buf, struct clt* first_client, int sock, s
 
     // msgall ------------------------------------------------------
   else if(strcmp("/msgall", cmd) == 0) {
-    do_write_broadcast(sock, msg, first_client);
+    char* msg_sent=malloc(sizeof (char) * MSG_MAXLEN);
+    strcpy(msg_sent,strchr(buf,32)+1);
+    do_write_broadcast(sock, msg_sent, first_client);
     server_rep=NULL;
   }
 
     // msg ---------------------------------------------------------
   else if(strcmp("/msg", cmd) == 0) {
     char* pseudo = malloc(sizeof (char) * MSG_MAXLEN);
-    sscanf(buf, "%s %s %s" , cmd, pseudo, msg);
-    server_rep=do_write_unicast(sock, pseudo, msg, first_client, 0);
+    char* msg_sent=malloc(sizeof (char) * MSG_MAXLEN);
+    char* msgtmp =malloc(sizeof (char) * MSG_MAXLEN);
+    sscanf(buf, "%s %s" , cmd, pseudo);
+    strcpy(msgtmp,strchr(buf,32)+1);
+    strcpy(msg_sent,strchr(msgtmp,32)+1);
+    server_rep=do_write_unicast(sock, pseudo, msg_sent, first_client, 0);
   }
 
   // create channel ------------------------------------------------

@@ -99,8 +99,6 @@ int main(int argc,char** argv)
           int sock_sender=create_socket(sv_addr, port_P2P, 2);
           send_file(sock_sender, "/home/julie/Documents/Prog_reseau/src/jalon/test_file.txt");
         }
-
-        //free(rep); free(mot2);
       }
     }
     printf("=== Socket closed === \n");

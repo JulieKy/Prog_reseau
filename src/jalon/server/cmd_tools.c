@@ -25,7 +25,7 @@ char* nick(struct clt* client, char* msg){
   char* rep = malloc(sizeof (char) * MSG_MAXLEN);
   char rep2[MSG_MAXLEN];
 
-  if (strlen(msg)<1) {
+  if (strlen(msg)<2) {
     rep ="Enter your new pseudo\n";
   }
 

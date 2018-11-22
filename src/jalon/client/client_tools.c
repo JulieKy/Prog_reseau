@@ -140,7 +140,7 @@ void send_first_pseudo(int sock){
   sscanf(buf, "%s %s" , cmd, pseudo);
 
   // While no pseudo given, ask for a pseudo
-  while ((strcmp("/nick", cmd) != 0) || (strlen(pseudo)<1)){
+  while ((strcmp("/nick", cmd) != 0) || (strlen(pseudo)<2)){
     printf("[Server]> Please logon with /nick <yourpseudo>\n");
     buf=readline(sock);
     sscanf(buf, "%s %s" , cmd, pseudo);
@@ -291,7 +291,7 @@ void send_file(int sock, char* file_path) {
 
   	 // Sending size file
   	 int w = write(sock,&size_file,sizeof(int));
-     printf("ecrit : %d", w);
+     printf("written : %d\n", w);
 
      int sent = 0;
      int res_read=0;
